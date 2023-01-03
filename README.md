@@ -1,12 +1,4 @@
-<style>
-  .my_text{
-    font-family:    Arial, Helvetica, sans-serif;
-    font-size:      40px;
-    font-weight:    bold;
-          }
-</style>
-
-<div align="center">
+<div align="center" style="font-family: 'Lucida Console';">
     <br>
     <h1>οἱ φίλοι</h1>
 </div>
