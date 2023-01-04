@@ -20,6 +20,8 @@ class DBApi:
         """
         Gets list of dicts with post info
 
+
+
         Possible keywords arguments:
         - u_id_post
         - u_id_user
