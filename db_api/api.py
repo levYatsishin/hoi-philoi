@@ -139,11 +139,14 @@ class DBApi:
     def create_user(self, fields: dict) -> bool:
         """
         The function creates new user in database
-        fields.keys() = (name, username, mail, password_hash)
 
         Example:
 
-        fields = {}
+        fields.keys() = (name, username, mail, password_hash)
+            - name: str
+            - username: str
+            - mail: str
+            - password_hash: str
         fields['username'] = 'leo'
         fields['password_hash'] = hash
         ...
@@ -155,8 +158,8 @@ class DBApi:
         """
         success = True
 
-        keys = ('name', 'username', 'mail', 'password_hash')
-        if fields.keys() not in keys:
+        keys = ['name', 'username', 'mail', 'password_hash']
+        if list(fields.keys()) != keys:
             return False
 
         try:
@@ -175,8 +178,11 @@ class DBApi:
         This function creates a new post in the database
 
         Example:
-        fields = {}
-        fields['content'] = 'Hello, my name is leo. Now i tell about ...'
+        fields.keys() = ('u_id_user', 'content', 'publication_date')
+            - u_id_user: int
+            - content: str
+            - publication_date: datatime object
+        fields['content'] = 'Hello, my name is Leo. Now i will tell you about ...'
         fields['u_id_user'] = 1132
         ...
         api.create_post(fields) # true
@@ -185,22 +191,43 @@ class DBApi:
         :param fields: dict with post fields
         :return: Return true if post creation was successful else false
         """
-        pass
 
-    def add_like(self, user_id: int, post_id: int) -> bool:
+        keys = ['u_id_user', 'content', 'publication_date']
+        if list(fields.keys()) != keys:
+            return False
+
+        self.cursor.execute(f"""INSERT INTO posts (u_id_user, content, publication_date)
+                                VALUES (%s, %s, %s)""", [fields[key] for key in keys])
+        self.conn.commit()
+
+        return True
+
+    def change_like_state(self, user_id: int, post_id: int) -> bool:
         """
-        This function adds like to a post
-
-        Example:
-        api.add_like(1023) # true
-        api.add_like(-131) # false
+        This function adds or removes like from a post.
 
         :param user_id: id of the user who liked the post
         :param post_id: id of the liked post
-        :return: Return true if adding a like was successful else false
+        :return: Return true if now post is liked. False if removed
         """
-        pass
+        self.cursor.execute(f"""SELECT count(*) FROM likes 
+                                WHERE u_id_post = %s and u_id_user = %s""", (post_id, user_id, ))
 
-    def close_connection(self):
+        already_liked = self.cursor.fetchone()[0]
+        if not already_liked:
+            self.cursor.execute(f"""INSERT INTO likes (u_id_post, u_id_user)
+            VALUES (%s, %s)""", (post_id, user_id))
+            self.conn.commit()
+        else:
+            self.cursor.execute(f"""DELETE FROM likes WHERE u_id_post = %s AND u_id_user = %s""", (post_id, user_id))
+            self.conn.commit()
+
+        return not already_liked
+
+    def close_connection(self) -> None:
+        """
+        Closes connection to the Data Base
+        """
+
         self.conn.clsoe()
         self.cursor.clsoe()

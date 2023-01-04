@@ -1,4 +1,5 @@
 from api import DBApi
+import datetime
 
 if __name__ == "__main__":
     api = DBApi('levyatsishin', 'localhost', 'levyatsishin', '', 5432)
@@ -16,7 +17,10 @@ if __name__ == "__main__":
     not_existing_likes = api.get_likes(-1)
     print(f"Likes for Post exists: {existing_likes}\nLikes for Post doesnt exist: {not_existing_likes}\n")
 
-    fields = {'name': "Вася Пупкин", 'userasname': "vasya", 'mail': "ddd", 'password_hash': "sdcsfsdcvsdcvsdc"}
-    print(api.create_user(fields))
+    user_fields = {'name': "Вася Пупкин", 'userasname': "dvasya", 'mail': "ddds", 'password_hash': "sdcsfsdcvsdcvsdc"}
+    print("User created:", api.create_user(user_fields))
 
+    print("Like: ", api.change_like_state(1, 1))
 
+    post_fields = {'u_id_user': 1, 'content': "hi!", 'publication_date': datetime.datetime.now()}
+    print("Create post: ", api.create_post(post_fields))
