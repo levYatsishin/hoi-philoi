@@ -5,15 +5,15 @@
 }
 
 #user_info {
-	position: left;
+	float: left;
+	padding-top: 50px;
 	width: 200px;
 	padding-left: 20px;
 }
 
 #templatemo_main {
 	float: right;
-	padding-top: 50px;
-	width: 600px;	
+	width: 600px;
 }
 
 #header {
