@@ -7,7 +7,7 @@ def initialise_tables(conn, cursor) -> None:
     Initialise tables in Data Base
 
     :param conn: db connection
-    :param cur: conn.cursor()
+    :param cursor: conn.cursor()
     :return:
     """
 
@@ -59,6 +59,11 @@ class DBApi:
         """
         This function returns dict with user info
 
+        Possible keywords arguments:
+        - u_id_user
+        - username
+        - mail
+
         Example:
         api.get_user_by(username='leo') # {"u_id_user": 213123, ...}
         api.get_post_by(name=231) # None
@@ -69,12 +74,13 @@ class DBApi:
         """
 
         parameter, value = list(kwargs.items())[0]
-        self.cursor.execute(f""" SELECT * FROM Users WHERE {parameter} = %s""", (value,))
+        self.cursor.execute(f""" SELECT * FROM users WHERE {parameter} = %s""", (value,))
         user_info = self.cursor.fetchone()
+
         if user_info:
             self.cursor.execute(f"""SELECT column_name
-                                    FROM INFORMATION_SCHEMA.COLUMNS
-                                    WHERE TABLE_NAME=N'users'""")
+                                                    FROM INFORMATION_SCHEMA.COLUMNS
+                                                    WHERE TABLE_NAME=N'users'""")
             rows = self.cursor.fetchall()
             rows = [col_name[0] for col_name in rows]
 
@@ -82,9 +88,9 @@ class DBApi:
         else:
             return None
 
-    def get_post_by(self, **kwargs) -> dict:
+    def get_posts_by(self, **kwargs) -> Optional[list]:
         """
-        The function gets dict with post info
+        This function returns list of dicts with posts info
 
         Possible keywords arguments:
         - u_id_post
@@ -95,14 +101,28 @@ class DBApi:
         api.get_post_by(dick='some_shit') # None
 
         :param kwargs: keywords arguments
-        :return: Return dict that contains content, u_id_post, u_id_user, date, image_reference if post exists
+        :return: Return list of dict that contains content, u_id_post, u_id_user, date, image_reference if post exists
          else None
         """
-        pass
 
-    def get_likes(self, post_id: int) -> int:
+        parameter, value = list(kwargs.items())[0]
+        self.cursor.execute(f""" SELECT * FROM posts WHERE {parameter} = %s""", (value,))
+        posts = self.cursor.fetchall()
+
+        if posts:
+            self.cursor.execute(f"""SELECT column_name
+                                    FROM INFORMATION_SCHEMA.COLUMNS
+                                    WHERE TABLE_NAME=N'posts'""")
+            rows = self.cursor.fetchall()
+            rows = [col_name[0] for col_name in rows]
+
+            return [dict(zip(rows, post)) for post in posts]
+        else:
+            return None
+
+    def get_likes(self, post_id: int) -> Optional[int]:
         """
-        The function gets number of likes
+        This function returns number of likes by post id
 
         Example:
         api.get_likes(111) # 10
@@ -111,7 +131,10 @@ class DBApi:
         :param post_id: post id
         :return: Return number of likes if post exists else None
         """
-        pass
+        self.cursor.execute(f""" SELECT count(*) FROM likes WHERE u_id_post = %s""", (post_id,))
+        likes = self.cursor.fetchone()[0]
+
+        return likes if likes else None
 
     def create_user(self, fields: dict) -> bool:
         """
@@ -128,7 +151,6 @@ class DBApi:
         :param fields: dict with user fields
         :return: Return true if user creation was successful else false
         """
-        pass
 
     def create_post(self, fields: dict) -> bool:
         """
