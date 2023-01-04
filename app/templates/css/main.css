@@ -10,7 +10,7 @@
 	width: 600px;	
 }
 
-#social_box {
+#header {
 	display: block;
 	width: 550px;
 	height: 48px;
@@ -19,17 +19,19 @@
 	background: url(../images/templatemo_social_box.jpg) no-repeat;
 }
 
-#social_box li {
+#header li {
 	display: block;
 	float: left;
 	padding: 0;
 	margin: 0;
 }
 
-#social_box li a {
+#header li a {
 	width: 48px;
 	height: 48px;
-	margin-right: 60px;
+	margin-right: 40px;
+	color: #1e8;
+	font-size: 24px;
 }
 
 
