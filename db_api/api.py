@@ -20,11 +20,11 @@ class DBApi:
         """
         Gets list of dicts with post info
 
-
-
         Possible keywords arguments:
         - u_id_post
         - u_id_user
+
+
 
         Example:
         api.get_posts_by(u_id_post=100) # [{"content": "hello", ...}, ...]
