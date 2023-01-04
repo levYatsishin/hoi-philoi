@@ -1,5 +1,5 @@
+from typing import Any
 import psycopg2
-from typing import Optional
 
 
 def initialise_tables(conn, cursor) -> None:
@@ -15,8 +15,8 @@ def initialise_tables(conn, cursor) -> None:
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Users (
-                u_id_user INTEGER PRIMARY KEY not null,
-                name VARCHAR(100) not null,
+                u_id_user SERIAL PRIMARY KEY not null,
+                name VARCHAR(100) not null, 
                 username VARCHAR(50) not null unique,
                 mail  VARCHAR(500) not null unique,
                 password_hash VARCHAR(500) not null, 
@@ -26,7 +26,7 @@ def initialise_tables(conn, cursor) -> None:
                 """)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Posts (
-                u_id_post INTEGER PRIMARY KEY not null ,
+                u_id_post SERIAL PRIMARY KEY not null ,
                 u_id_user INTEGER not null,
                 content VARCHAR not null,
                 publication_date timestamp without time zone not null,
@@ -35,7 +35,7 @@ def initialise_tables(conn, cursor) -> None:
                 """)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Likes (
-                u_id_post INTEGER PRIMARY KEY not null,
+                u_id_post INTEGER not null,
                 u_id_user INTEGER not null,
                 constraint likes_users_fkey foreign key (u_id_user)
                 references Users (u_id_user) on delete restrict on update cascade,
@@ -55,7 +55,7 @@ class DBApi:
         self.cursor = self.conn.cursor()
         initialise_tables(self.conn, self.cursor)
 
-    def get_user_by(self, **kwargs) -> Optional[dict]:
+    def get_user_by(self, **kwargs) -> dict | None:
         """
         This function returns dict with user info
 
@@ -88,7 +88,7 @@ class DBApi:
         else:
             return None
 
-    def get_posts_by(self, **kwargs) -> Optional[list]:
+    def get_posts_by(self, **kwargs) -> list[dict[str, Any]] | None:
         """
         This function returns list of dicts with posts info
 
@@ -120,7 +120,7 @@ class DBApi:
         else:
             return None
 
-    def get_likes(self, post_id: int) -> Optional[int]:
+    def get_likes(self, post_id: int) -> int:
         """
         This function returns number of likes by post id
 
@@ -129,18 +129,20 @@ class DBApi:
         api.get_likes(-1) # None
 
         :param post_id: post id
-        :return: Return number of likes if post exists else None
+        :return: Return number of likes. If post does not also exist returns 0
         """
         self.cursor.execute(f""" SELECT count(*) FROM likes WHERE u_id_post = %s""", (post_id,))
         likes = self.cursor.fetchone()[0]
 
-        return likes if likes else None
+        return likes
 
     def create_user(self, fields: dict) -> bool:
         """
         The function creates new user in database
+        fields.keys() = (name, username, mail, password_hash)
 
         Example:
+
         fields = {}
         fields['username'] = 'leo'
         fields['password_hash'] = hash
@@ -151,10 +153,26 @@ class DBApi:
         :param fields: dict with user fields
         :return: Return true if user creation was successful else false
         """
+        success = True
+
+        keys = ('name', 'username', 'mail', 'password_hash')
+        if fields.keys() not in keys:
+            return False
+
+        try:
+            self.cursor.execute(f"""INSERT INTO users (name, username, mail, password_hash)
+            VALUES (%s, %s, %s, %s)""", [fields[key] for key in keys])
+            self.conn.commit()
+
+        except psycopg2.errors.UniqueViolation:
+            success = False
+
+        finally:
+            return success
 
     def create_post(self, fields: dict) -> bool:
         """
-        The function create post in database
+        This function creates a new post in the database
 
         Example:
         fields = {}
@@ -169,15 +187,16 @@ class DBApi:
         """
         pass
 
-    def add_like(self, post_id: int) -> bool:
+    def add_like(self, user_id: int, post_id: int) -> bool:
         """
-        The function add like to post
+        This function adds like to a post
 
         Example:
         api.add_like(1023) # true
         api.add_like(-131) # false
 
-        :param post_id: int that contains post id
+        :param user_id: id of the user who liked the post
+        :param post_id: id of the liked post
         :return: Return true if adding a like was successful else false
         """
         pass

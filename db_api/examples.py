@@ -16,4 +16,7 @@ if __name__ == "__main__":
     not_existing_likes = api.get_likes(-1)
     print(f"Likes for Post exists: {existing_likes}\nLikes for Post doesnt exist: {not_existing_likes}\n")
 
+    fields = {'name': "Вася Пупкин", 'userasname': "vasya", 'mail': "ddd", 'password_hash': "sdcsfsdcvsdcvsdc"}
+    print(api.create_user(fields))
+
 
