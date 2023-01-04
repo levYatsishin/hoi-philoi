@@ -2,26 +2,94 @@ class DBApi:
     def __init__(self) -> None:
         pass
 
-    def get_user(self, user_id: int) -> dict:
+    def get_user_by(self, **kwargs) -> dict:
         """
         The function get dict with user info
-        :param user_id: user id
-        :return: dict; Dict contains content, u_id_post, u_id_user, date, image_reference
+
+        Example:
+        api.get_user_by(username='leo') # {"u_id_user": 213123, ...}
+        api.get_post_by(name=231) # None
+
+        :param kwargs: keywords arguments
+        :return: Return dict thatА contains u_id_user, name, username, mail, password_hash, image_reference, location,
+        bio, tag. If the user is not found return None
         """
         pass
 
-    def get_post(self, post_id: int) -> dict:
+    def get_post_by(self, **kwargs) -> dict:
         """
         The function get dict with post info
-        :param post_id: post id
-        :return: dict; Dict contains u_id_user, name, username, mail, password_hash, image_reference, location, bio, tag
+
+        Possible keywords arguments:
+        - u_id_post
+        - u_id_user
+
+        Example:
+        api.get_post_by(u_id_post=100) # {"content": "hello", ...}
+        api.get_post_by(dick='some_shit') # None
+
+        :param kwargs: keywords arguments
+        :return: Return dict that contains content, u_id_post, u_id_user, date, image_reference if post exists
+         else None
         """
         pass
 
     def get_likes(self, post_id: int) -> int:
         """
         The function get number of likes
+
+        Example:
+        api.get_likes(111) # 10
+        api.get_likes(-1) # None
+
         :param post_id: post id
-        :return: number of likes
+        :return: Return number of likes if post exists else None
+        """
+        pass
+
+    def create_user(self, fields: dict) -> bool:
+        """
+        The function create new user in database
+
+        Example:
+        fields = {}
+        fields['username'] = 'leo'
+        fields['password_hash'] = hash
+        ...
+        api.create_user(fields) # true
+        api.create_user({}) # false
+
+        :param fields: dict with user fields
+        :return: Return true if user creation was successful else false
+        """
+        pass
+
+    def create_post(self, fields: dict) -> bool:
+        """
+        The function create post in database
+
+        Example:
+        fields = {}
+        fields['content'] = 'Hello, my name is leo. Now i tell about ...'
+        fields['u_id_user'] = 1132
+        ...
+        api.create_post(fields) # true
+        api.create_post({}) # false
+
+        :param fields: dict with post fields
+        :return: Return true if post creation was successful else false
+        """
+        pass
+
+    def add_like(self, post_id: int) -> bool:
+        """
+        The function add like to post
+
+        Example:
+        api.add_like(1023) # true
+        api.add_like(-131) # false
+
+        :param post_id: int that contains post id
+        :return: Return true if adding a like was successful else false
         """
         pass
