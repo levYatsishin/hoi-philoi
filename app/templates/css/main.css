@@ -4,6 +4,12 @@
 	padding: 20px 10px 0 70px;
 }
 
+#user_info {
+	position: left;
+	width: 200px;
+	padding-left: 20px;
+}
+
 #templatemo_main {
 	float: right;
 	padding-top: 50px;
@@ -54,22 +60,6 @@
     padding: 30px;
     height: 395px;
     width: 540px;
-}
-
-.scrollButtons {
-    position: absolute;
-    top: 300px;
-    cursor: pointer;
-	width: 0;
-	height: 0;
-}
-
-.scrollButtons.left {
-    left: -50px;
-}
-
-.scrollButtons.right {
-    right: -50px;
 }
 
 .hide {
