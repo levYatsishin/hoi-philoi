@@ -138,7 +138,7 @@ class DBApi:
 
     def create_user(self, fields: dict) -> bool:
         """
-        The function creates new user in database
+        This function creates new a user in the database
 
         Example:
 
