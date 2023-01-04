@@ -24,15 +24,12 @@ class DBApi:
         - u_id_post
         - u_id_user
 
-
-
         Example:
         api.get_posts_by(u_id_post=100) # [{"content": "hello", ...}, ...]
         api.get_posts_by(dick='some_shit') # None
 
-        :param kwargs: keywords arguments
-        :return: Return list of dict where dict contains content, u_id_post, u_id_user, date, image_reference if post exists
-         else None
+        :param kwargs: keywords arguments :return: Return list of dict where dict contains content, u_id_post,
+        u_id_user, date, image_reference if post exists else None
         """
         pass
 
