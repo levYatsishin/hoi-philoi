@@ -26,17 +26,14 @@
             <div id="content">
                 <div class="scroll">
                     <div class="scrollContainer">
-                        <div class="panel" id="0">
-                            <img src="images/templatemo_image_01.jpg" alt="image" />
-                            <p>Some text according to image above</p>
+                        {% for id, post in enumerate(posts) %}
+                        <div class="panel" id="{{id}}">
+                            <img src="{{post['image']}}" alt="image" />
+                            <p>{{post['text']}}</p>
                             
-                            <div class="btn_more"><a href="#1">More <span>&raquo;</span></a></div>
+                            <div class="btn_more"><a href="#{{id + 1}}">next <span>&raquo;</span></a></div>
                         </div>
-                         
-                        <div class="panel" id="1">
-                            <img src="images/templatemo_image_02.jpg" alt="image" />
-                            <p>Some text according to image above</p>
-                        </div>    
+                        {% endfor %}
                     </div>
                 </div>
             </div>
