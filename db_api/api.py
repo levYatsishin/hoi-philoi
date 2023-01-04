@@ -4,7 +4,7 @@ class DBApi:
 
     def get_user_by(self, **kwargs) -> dict:
         """
-        The function get dict with user info
+        Gets dict with user info
 
         Example:
         api.get_user_by(username='leo') # {"u_id_user": 213123, ...}
@@ -16,27 +16,27 @@ class DBApi:
         """
         pass
 
-    def get_post_by(self, **kwargs) -> dict:
+    def get_posts_by(self, **kwargs) -> list[dict]:
         """
-        The function get dict with post info
+        Gets list of dicts with post info
 
         Possible keywords arguments:
         - u_id_post
         - u_id_user
 
         Example:
-        api.get_post_by(u_id_post=100) # {"content": "hello", ...}
-        api.get_post_by(dick='some_shit') # None
+        api.get_posts_by(u_id_post=100) # [{"content": "hello", ...}, ...]
+        api.get_posts_by(dick='some_shit') # None
 
         :param kwargs: keywords arguments
-        :return: Return dict that contains content, u_id_post, u_id_user, date, image_reference if post exists
+        :return: Return list of dict where dict contains content, u_id_post, u_id_user, date, image_reference if post exists
          else None
         """
         pass
 
     def get_likes(self, post_id: int) -> int:
         """
-        The function get number of likes
+        Gets number of likes
 
         Example:
         api.get_likes(111) # 10
@@ -49,7 +49,7 @@ class DBApi:
 
     def create_user(self, fields: dict) -> bool:
         """
-        The function create new user in database
+        Gets create new user in database
 
         Example:
         fields = {}
@@ -66,11 +66,11 @@ class DBApi:
 
     def create_post(self, fields: dict) -> bool:
         """
-        The function create post in database
+        Creates post in database
 
         Example:
         fields = {}
-        fields['content'] = 'Hello, my name is leo. Now i tell about ...'
+        fields['content'] = 'Hello, my name is leo. Now I tell about ...'
         fields['u_id_user'] = 1132
         ...
         api.create_post(fields) # true
@@ -83,7 +83,7 @@ class DBApi:
 
     def add_like(self, post_id: int) -> bool:
         """
-        The function add like to post
+        Adds like to post
 
         Example:
         api.add_like(1023) # true
