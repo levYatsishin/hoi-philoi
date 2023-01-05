@@ -1,8 +1,11 @@
 from api import DBApi
 import datetime
+import os
 
 if __name__ == "__main__":
-    api = DBApi('levyatsishin', 'localhost', 'levyatsishin', '', 5432)
+    db_password = os.environ["POSTGRES_PASS"]
+    db_ip = os.environ["POSTGRES_IP"]
+    api = DBApi('postgres', db_ip, 'admin', db_password, 5432)
 
     # api.get_user_by show cases
     existing_user = api.get_user_by(u_id_user=1)

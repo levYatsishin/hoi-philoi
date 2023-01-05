@@ -191,16 +191,21 @@ class DBApi:
         :param fields: dict with post fields
         :return: Return true if post creation was successful else false
         """
+        success = True
 
         keys = ['u_id_user', 'content', 'publication_date']
         if list(fields.keys()) != keys:
             return False
+        try:
+            self.cursor.execute(f"""INSERT INTO posts (u_id_user, content, publication_date)
+                                    VALUES (%s, %s, %s)""", [fields[key] for key in keys])
+            self.conn.commit()
 
-        self.cursor.execute(f"""INSERT INTO posts (u_id_user, content, publication_date)
-                                VALUES (%s, %s, %s)""", [fields[key] for key in keys])
-        self.conn.commit()
+        except psycopg2.errors.ForeignKeyViolation:
+            success = False
 
-        return True
+        finally:
+            return success
 
     def change_like_state(self, user_id: int, post_id: int) -> bool:
         """
@@ -208,21 +213,26 @@ class DBApi:
 
         :param user_id: id of the user who liked the post
         :param post_id: id of the liked post
-        :return: Return true if now post is liked. False if removed
+        :return: Return True if successful else False
         """
-        self.cursor.execute(f"""SELECT count(*) FROM likes 
-                                WHERE u_id_post = %s and u_id_user = %s""", (post_id, user_id, ))
+        success = True
 
-        already_liked = self.cursor.fetchone()[0]
-        if not already_liked:
-            self.cursor.execute(f"""INSERT INTO likes (u_id_post, u_id_user)
-            VALUES (%s, %s)""", (post_id, user_id))
-            self.conn.commit()
-        else:
-            self.cursor.execute(f"""DELETE FROM likes WHERE u_id_post = %s AND u_id_user = %s""", (post_id, user_id))
-            self.conn.commit()
+        try:
+            self.cursor.execute(f"""SELECT count(*) FROM likes 
+                                    WHERE u_id_post = %s and u_id_user = %s""", (post_id, user_id, ))
 
-        return not already_liked
+            already_liked = self.cursor.fetchone()[0]
+            if not already_liked:
+                self.cursor.execute(f"""INSERT INTO likes (u_id_post, u_id_user)
+                VALUES (%s, %s)""", (post_id, user_id))
+                self.conn.commit()
+            else:
+                self.cursor.execute(f"""DELETE FROM likes WHERE u_id_post = %s AND u_id_user = %s""", (post_id, user_id))
+                self.conn.commit()
+        except psycopg2.errors.ForeignKeyViolation:
+            success = False
+
+        return success
 
     def close_connection(self) -> None:
         """
