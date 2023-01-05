@@ -1,34 +1,32 @@
+import time
+
 from postgres_api import DBApi
+from images_api import ImageApi
 import datetime
 import os
 
 DB_PASSWORD = os.environ["POSTGRES_PASS"]
 DB_IP = os.environ["POSTGRES_IP"]
-MINIO_API_HOST = "http://" + os.environ["POSTGRES_IP"] + ":9090"
 
-
-def api_tests():
-    api = DBApi('postgres', db_ip, 'admin', db_password, 5432)
-    api_2 = DBApi('postgres', db_ip, 'admin', db_password, 5432)
-    print(f"Single tone works: {api_2 is api}")
-
-    user_fields = {'name': "Вася Пупкин", 'username': "", 'mail': "ddds", 'password_hash': "sdcsfsdcvsdcvsdc"}
-    print("User created:", api.create_user(user_fields))
-    post_fields = {'u_id_user': 1, 'content': "hi!", 'publication_date': datetime.datetime.now()}
-    print("Create post: ", api.create_post(post_fields))
-
-    existing_user = api.get_user_by(u_id_user=1)
-    not_existing_user = api.get_user_by(u_id_user=12)
-    print(f"User exists: {existing_user}\nUser doesnt exist: {not_existing_user}\n")
-
-    existing_posts = api.get_posts_by(u_id_post=1)
-    not_existing_posts = api.get_posts_by(u_id_post=12)
-    print(f"Posts exist: {existing_posts}\nPosts dont exist: {not_existing_posts}\n")
-
-
-def images_api_tests():
-    pass
-
+MINIO_API_HOST = os.environ["POSTGRES_IP"] + ":9000"
+MINIO_ACCESS_KEY = os.environ["MINIO_ACCESS_KEY"]
+MINIO_SECRET_KEY = os.environ["MINIO_SECRET_KEY"]
 
 if __name__ == "__main__":
-    images_api_tests()
+    db_api = DBApi()
+    db_api2 = DBApi()
+    db_api.connect(DB_IP, '5432', 'postgres', 'admin', DB_PASSWORD)
+
+    print(f"Singleton is working: {db_api is db_api2}")
+
+    image_api = ImageApi()
+    image_api.connect(MINIO_API_HOST, MINIO_ACCESS_KEY, MINIO_SECRET_KEY)
+
+    # with open('../mushrooms.jpg', 'rb') as file:
+    #     size = os.stat('../mushrooms.jpg').st_size
+    #     image_api.upload_image(file, 'mushrooms.jpg', size)
+
+    data = image_api.get_image("mushrooms.jpg")
+    with open('downloaded_mushrooms.jpg', 'wb') as file_data:
+        for d in data.stream(32*1024):
+            file_data.write(d)

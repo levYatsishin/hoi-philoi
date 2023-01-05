@@ -1,25 +1,26 @@
 from minio import Minio
 from loguru import logger
+import traceback
 
 from patterns import Singleton
 
 
 class ImageApi(Singleton):
     def __init__(self):
-        self.minio_client = None
+        self._minio_client = None
 
     def connect(self, address, access_key, secret_key):
-        self.minio_client = Minio(address, access_key=access_key, secret_key=secret_key, secure=False)
+        self._minio_client = Minio(address, access_key=access_key, secret_key=secret_key, secure=False)
 
-    def upload_image(self, image_data: bytes, image_name: str) -> str | None:
+    def upload_image(self, image_data: any, image_name: str, size: int) -> str | None:
         """
         This function uploads image
 
-        :return: If successful id of uploaded image else None
+        :return: If successful returns name of uploaded image else None
         """
 
         try:
-            self.minio_client.put_object('images', image_name, image_data, len(image_data))
+            self._minio_client.put_object('images', image_name, image_data, size)
             return str(image_name)
 
         except Exception as e:
@@ -35,7 +36,7 @@ class ImageApi(Singleton):
         """
 
         try:
-            data = self.minio_client.get_object('images', image_name)
+            data = self._minio_client.get_object('images', image_name)
             return data
 
         except Exception as e:
