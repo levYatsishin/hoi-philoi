@@ -1,5 +1,10 @@
+import traceback
 from typing import Any
+
 import psycopg2
+from loguru import logger
+
+from .patterns import Singleton
 
 
 def initialise_tables(conn, cursor) -> None:
@@ -45,30 +50,19 @@ def initialise_tables(conn, cursor) -> None:
     conn.commit()
 
 
-class Singleton(object):
-    _instance = None
-
-    def __new__(cls, *args, **kwargs):
-        if not isinstance(cls._instance, cls):
-            cls._instance = object.__new__(cls)
-        return cls._instance
-
-
-class DBApi(Singleton):
+class DBApi(metaclass=Singleton):
     def __init__(self) -> None:
-        self.cursor = None if 'cursor' not in locals() else self.cursor
-        self.conn = None if 'conn' not in locals() else self.conn
+        self._conn = None
+        self._cursor = None
 
-    def set_connection(self, db_name, db_host, db_user, db_pass, db_port):
-        self.conn = psycopg2.connect(database=db_name,
-                                     host=db_host,
-                                     user=db_user,
-                                     password=db_pass,
-                                     port=db_port)
-
-        self.cursor = self.conn.cursor()
-
-        initialise_tables(self.conn, self.cursor)
+    def connect(self, db_host, db_port, db_name, db_user, db_pass) -> None:
+        self._conn = psycopg2.connect(database=db_name,
+                                      host=db_host,
+                                      user=db_user,
+                                      password=db_pass,
+                                      port=db_port)
+        self._cursor = self._conn.cursor()
+        initialise_tables(self._conn, self._cursor)
 
     def get_user_by(self, **kwargs) -> dict | None:
         """
@@ -89,14 +83,14 @@ class DBApi(Singleton):
         """
 
         parameter, value = list(kwargs.items())[0]
-        self.cursor.execute(f""" SELECT * FROM users WHERE {parameter} = %s""", (value,))
-        user_info = self.cursor.fetchone()
+        self._cursor.execute(f""" SELECT * FROM users WHERE {parameter} = %s""", (value,))
+        user_info = self._cursor.fetchone()
 
         if user_info:
-            self.cursor.execute(f"""SELECT column_name
+            self._cursor.execute(f"""SELECT column_name
                                                     FROM INFORMATION_SCHEMA.COLUMNS
                                                     WHERE TABLE_NAME=N'users'""")
-            rows = self.cursor.fetchall()
+            rows = self._cursor.fetchall()
             rows = [col_name[0] for col_name in rows]
 
             return dict(zip(rows, user_info))
@@ -121,14 +115,14 @@ class DBApi(Singleton):
         """
 
         parameter, value = list(kwargs.items())[0]
-        self.cursor.execute(f""" SELECT * FROM posts WHERE {parameter} = %s""", (value,))
-        posts = self.cursor.fetchall()
+        self._cursor.execute(f""" SELECT * FROM posts WHERE {parameter} = %s""", (value,))
+        posts = self._cursor.fetchall()
 
         if posts:
-            self.cursor.execute(f"""SELECT column_name
+            self._cursor.execute(f"""SELECT column_name
                                     FROM INFORMATION_SCHEMA.COLUMNS
                                     WHERE TABLE_NAME=N'posts'""")
-            rows = self.cursor.fetchall()
+            rows = self._cursor.fetchall()
             rows = [col_name[0] for col_name in rows]
 
             return [dict(zip(rows, post)) for post in posts]
@@ -146,8 +140,8 @@ class DBApi(Singleton):
         :param post_id: post id
         :return: Return number of likes. If post does not also exist returns 0
         """
-        self.cursor.execute(f""" SELECT count(*) FROM likes WHERE u_id_post = %s""", (post_id,))
-        likes = self.cursor.fetchone()[0]
+        self._cursor.execute(f""" SELECT count(*) FROM likes WHERE u_id_post = %s""", (post_id,))
+        likes = self._cursor.fetchone()[0]
 
         return likes
 
@@ -178,11 +172,12 @@ class DBApi(Singleton):
             return False
 
         try:
-            self.cursor.execute(f"""INSERT INTO users (name, username, mail, password_hash)
+            self._cursor.execute(f"""INSERT INTO users (name, username, mail, password_hash)
             VALUES (%s, %s, %s, %s)""", [fields[key] for key in keys])
-            self.conn.commit()
+            self._conn.commit()
 
-        except Exception:
+        except Exception as e:
+            logger.error(f"Error: {e}\n Traceback: {traceback.format_exc()}")
             success = False
 
         finally:
@@ -212,11 +207,12 @@ class DBApi(Singleton):
         if list(fields.keys()) != keys:
             return False
         try:
-            self.cursor.execute(f"""INSERT INTO posts (u_id_user, content, publication_date)
+            self._cursor.execute(f"""INSERT INTO posts (u_id_user, content, publication_date)
                                     VALUES (%s, %s, %s)""", [fields[key] for key in keys])
-            self.conn.commit()
+            self._conn.commit()
 
-        except psycopg2.errors.ForeignKeyViolation:
+        except Exception as e:
+            logger.error(f"Error: {e}\n Traceback: {traceback.format_exc()}")
             success = False
 
         finally:
@@ -233,19 +229,20 @@ class DBApi(Singleton):
         success = True
 
         try:
-            self.cursor.execute(f"""SELECT count(*) FROM likes 
+            self._cursor.execute(f"""SELECT count(*) FROM likes 
                                     WHERE u_id_post = %s and u_id_user = %s""", (post_id, user_id,))
 
-            already_liked = self.cursor.fetchone()[0]
+            already_liked = self._cursor.fetchone()[0]
             if not already_liked:
-                self.cursor.execute(f"""INSERT INTO likes (u_id_post, u_id_user)
+                self._cursor.execute(f"""INSERT INTO likes (u_id_post, u_id_user)
                 VALUES (%s, %s)""", (post_id, user_id))
-                self.conn.commit()
+                self._conn.commit()
             else:
-                self.cursor.execute(f"""DELETE FROM likes WHERE u_id_post = %s AND u_id_user = %s""",
-                                    (post_id, user_id))
-                self.conn.commit()
-        except psycopg2.errors.ForeignKeyViolation:
+                self._cursor.execute(f"""DELETE FROM likes WHERE u_id_post = %s AND u_id_user = %s""",
+                                     (post_id, user_id))
+                self._conn.commit()
+        except Exception as e:
+            logger.error(f"Error: {e}\n Traceback: {traceback.format_exc()}")
             success = False
 
         return success
@@ -255,5 +252,5 @@ class DBApi(Singleton):
         Closes connection to the Data Base
         """
 
-        self.conn.close()
-        self.cursor.close()
+        self._conn.clsoe()
+        self._cursor.clsoe()

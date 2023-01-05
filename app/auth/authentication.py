@@ -20,9 +20,7 @@ def login():
         user = DBApi().get_user_by(username=form.login.data)
 
         if user is not None and check_password_hash(user['password_hash'], form.password.data):
-            user = User(user['u_id_user'])
-
-            login_user(user, remember=True)
+            login_user(User(user), remember=True)
 
             return redirect('/')
 

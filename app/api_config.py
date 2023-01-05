@@ -1,2 +1,3 @@
 from os import environ
-api_config = ['postgres', environ["POSTGRES_IP"], 'admin', environ["POSTGRES_PASS"], 5432]
+
+api_config = [environ["POSTGRES_IP"], 5432, 'postgres', 'admin', environ["POSTGRES_PASS"]]
