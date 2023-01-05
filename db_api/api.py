@@ -93,12 +93,12 @@ class DBApi:
         This function returns list of dicts with posts info
 
         Possible keywords arguments:
-        - u_id_post
-        - u_id_user
+            - u_id_post
+            - u_id_user
 
         Example:
-        api.get_post_by(u_id_post=100) # {"content": "hello", ...}
-        api.get_post_by(dick='some_shit') # None
+        api.get_posts_by(u_id_post=100) # [{"content": "hello", ...}, ...]
+        api.get_posts_by(u_id_post=-1) # None
 
         :param kwargs: keywords arguments
         :return: Return list of dict that contains content, u_id_post, u_id_user, date, image_reference if post exists
