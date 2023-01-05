@@ -1,3 +1,4 @@
+import traceback
 from typing import Any
 import psycopg2
 
@@ -176,7 +177,8 @@ class DBApi(Singleton):
             VALUES (%s, %s, %s, %s)""", [fields[key] for key in keys])
             self.conn.commit()
 
-        except psycopg2.errors.UniqueViolation:
+        except Exception as e:
+            print(e, traceback.format_exc())
             success = False
 
         finally:
@@ -210,7 +212,8 @@ class DBApi(Singleton):
                                     VALUES (%s, %s, %s)""", [fields[key] for key in keys])
             self.conn.commit()
 
-        except psycopg2.errors.ForeignKeyViolation:
+        except Exception as e:
+            print(e, traceback.format_exc())
             success = False
 
         finally:
@@ -239,7 +242,8 @@ class DBApi(Singleton):
                 self.cursor.execute(f"""DELETE FROM likes WHERE u_id_post = %s AND u_id_user = %s""",
                                     (post_id, user_id))
                 self.conn.commit()
-        except psycopg2.errors.ForeignKeyViolation:
+        except Exception as e:
+            print(e, traceback.format_exc())
             success = False
 
         return success
