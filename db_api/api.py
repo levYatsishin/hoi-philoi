@@ -1,6 +1,7 @@
 import traceback
 from typing import Any
 import psycopg2
+from loguru import logger
 
 
 def initialise_tables(conn, cursor) -> None:
@@ -178,7 +179,7 @@ class DBApi(Singleton):
             self.conn.commit()
 
         except Exception as e:
-            print(e, traceback.format_exc())
+            logger.error(f"Error: {e}\n Traceback: {traceback.format_exc()}")
             success = False
 
         finally:
@@ -213,7 +214,7 @@ class DBApi(Singleton):
             self.conn.commit()
 
         except Exception as e:
-            print(e, traceback.format_exc())
+            logger.error(f"Error: {e}\n Traceback: {traceback.format_exc()}")
             success = False
 
         finally:
@@ -243,7 +244,7 @@ class DBApi(Singleton):
                                     (post_id, user_id))
                 self.conn.commit()
         except Exception as e:
-            print(e, traceback.format_exc())
+            logger.error(f"Error: {e}\n Traceback: {traceback.format_exc()}")
             success = False
 
         return success
