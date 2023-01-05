@@ -1,11 +1,13 @@
-from api import DBApi
+from postgres_api import DBApi
 import datetime
 import os
 
-if __name__ == "__main__":
-    db_password = os.environ["POSTGRES_PASS"]
-    db_ip = os.environ["POSTGRES_IP"]
+DB_PASSWORD = os.environ["POSTGRES_PASS"]
+DB_IP = os.environ["POSTGRES_IP"]
+MINIO_API_HOST = "http://" + os.environ["POSTGRES_IP"] + ":9090"
 
+
+def api_tests():
     api = DBApi('postgres', db_ip, 'admin', db_password, 5432)
     api_2 = DBApi('postgres', db_ip, 'admin', db_password, 5432)
     print(f"Single tone works: {api_2 is api}")
@@ -23,3 +25,10 @@ if __name__ == "__main__":
     not_existing_posts = api.get_posts_by(u_id_post=12)
     print(f"Posts exist: {existing_posts}\nPosts dont exist: {not_existing_posts}\n")
 
+
+def images_api_tests():
+    pass
+
+
+if __name__ == "__main__":
+    images_api_tests()
