@@ -45,7 +45,16 @@ def initialise_tables(conn, cursor) -> None:
     conn.commit()
 
 
-class DBApi:
+class Singleton(object):
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if not isinstance(cls._instance, cls):
+            cls._instance = object.__new__(cls)
+        return cls._instance
+
+
+class DBApi(Singleton):
     def __init__(self, db_name, db_host, db_user, db_pass, db_port) -> None:
         self.conn = psycopg2.connect(database=db_name,
                                      host=db_host,
@@ -219,7 +228,7 @@ class DBApi:
 
         try:
             self.cursor.execute(f"""SELECT count(*) FROM likes 
-                                    WHERE u_id_post = %s and u_id_user = %s""", (post_id, user_id, ))
+                                    WHERE u_id_post = %s and u_id_user = %s""", (post_id, user_id,))
 
             already_liked = self.cursor.fetchone()[0]
             if not already_liked:
@@ -227,7 +236,8 @@ class DBApi:
                 VALUES (%s, %s)""", (post_id, user_id))
                 self.conn.commit()
             else:
-                self.cursor.execute(f"""DELETE FROM likes WHERE u_id_post = %s AND u_id_user = %s""", (post_id, user_id))
+                self.cursor.execute(f"""DELETE FROM likes WHERE u_id_post = %s AND u_id_user = %s""",
+                                    (post_id, user_id))
                 self.conn.commit()
         except psycopg2.errors.ForeignKeyViolation:
             success = False

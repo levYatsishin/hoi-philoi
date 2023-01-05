@@ -27,3 +27,7 @@ if __name__ == "__main__":
 
     post_fields = {'u_id_user': 1, 'content': "hi!", 'publication_date': datetime.datetime.now()}
     print("Create post: ", api.create_post(post_fields))
+
+    api2 = DBApi('postgres', db_ip, 'admin', db_password, 5432)
+
+    print(f"Single tone works: {api2 is api}")
