@@ -51,7 +51,11 @@ def initialise_tables(conn, cursor) -> None:
 
 
 class DBApi(Singleton):
-    def __init__(self, db_name, db_host, db_user, db_pass, db_port) -> None:
+    def __init__(self) -> None:
+        self.conn = None
+        self.cursor = None
+
+    def connect(self, db_name, db_host, db_user, db_pass, db_port) -> None:
         self.conn = psycopg2.connect(database=db_name,
                                      host=db_host,
                                      user=db_user,
