@@ -9,8 +9,6 @@ from . import auth_app
 from units import User
 from db_api import DBApi
 
-from api_config import api_config
-
 __all__ = []
 
 
@@ -19,15 +17,12 @@ def login():
     form = LoginForm()
 
     if request.method == 'POST':
-        user = DBApi(*api_config).get_user_by(username=form.login.data)
+        user = DBApi().get_user_by(username=form.login.data)
 
-        if check_password_hash(user['password_hash'], form.password.data):
+        if user is not None and check_password_hash(user['password_hash'], form.password.data):
             user = User(user['u_id_user'])
 
-            if user is None:
-                return render_template('authentication/login.html', form=form)
-
-            login_user(user)
+            login_user(user, remember=True)
 
             return redirect('/')
 
@@ -39,9 +34,10 @@ def register():
     form = RegisterForm()
 
     if request.method == 'POST':
-        success = DBApi(*api_config).create_user(
+        success = DBApi().create_user(
             {'name': form.name.data, 'username': form.username.data, 'mail': form.mail.data,
              'password_hash': str(generate_password_hash(form.password.data))})
+
         if success:
             return redirect('/login')
 

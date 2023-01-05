@@ -18,10 +18,10 @@
 <body>
     <div id="slider">
         <div id="user_info">
-            <p><img src="{{person['image']}}"></p>
-            <p>{{person['name']}}</p>
-            <p>{{person['desc']</p>
-            <p>{{person['e_mail']}}</p>
+            <p><img src="{{person['image_reference']}}"></p>
+            <p>{{person['username']}}</p>
+            <p>{{person['bio']</p>
+            <p>{{person['mail']}}</p>
             <p>{{person['location']}}</p>
             <p>{{person['tags']}}</p>
             
@@ -36,12 +36,12 @@
             <div id="content">
                 <div class="scroll">
                     <div class="scrollContainer">
-                        {% for id, post in enumerate(posts) %}
-                        <div class="panel" id="{{id}}">
-                            <img src="{{post['image']}}" alt="image" />
-                            <p>{{post['text']}}</p>
+                        {% for post in posts %}
+                        <div class="panel" id="{{post['u_id_post']}}">
+                            <img src="{{post['image_reference ']}}" alt="image" />
+                            <p>{{post['content']}}</p>
                             
-                            <div class="btn_more"><a href="#{{id + 1}}">next <span>&raquo;</span></a></div>
+                            <div class="btn_more"><a href="#{{post['u_id_post'] + 1}}">next <span>&raquo;</span></a></div>
                         </div>
                         {% endfor %}
                     </div>

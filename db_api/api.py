@@ -1,4 +1,3 @@
-import traceback
 from typing import Any
 import psycopg2
 
@@ -56,13 +55,19 @@ class Singleton(object):
 
 
 class DBApi(Singleton):
-    def __init__(self, db_name, db_host, db_user, db_pass, db_port) -> None:
+    def __init__(self) -> None:
+        self.cursor = None if 'cursor' not in locals() else self.cursor
+        self.conn = None if 'conn' not in locals() else self.conn
+
+    def set_connection(self, db_name, db_host, db_user, db_pass, db_port):
         self.conn = psycopg2.connect(database=db_name,
                                      host=db_host,
                                      user=db_user,
                                      password=db_pass,
                                      port=db_port)
+
         self.cursor = self.conn.cursor()
+
         initialise_tables(self.conn, self.cursor)
 
     def get_user_by(self, **kwargs) -> dict | None:
@@ -177,8 +182,7 @@ class DBApi(Singleton):
             VALUES (%s, %s, %s, %s)""", [fields[key] for key in keys])
             self.conn.commit()
 
-        except Exception as e:
-            print(e, traceback.format_exc())
+        except Exception:
             success = False
 
         finally:

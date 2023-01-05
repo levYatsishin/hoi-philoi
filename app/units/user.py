@@ -4,8 +4,11 @@ __all__ = ['User']
 
 
 class User(UserMixin):
-    def __init__(self, u_user_id) -> None:
-        self.__u_user_id = u_user_id
+    def __init__(self, data: dict) -> None:
+        self.__data: dict = data
 
     def get_id(self) -> int:
-        return self.__u_user_id
+        return self.__data['u_id_user']
+
+    def get_data(self):
+        return self.__data

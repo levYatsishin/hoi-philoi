@@ -16,20 +16,23 @@ class App:
     def __init__(self):
         self.flask: Flask = Flask(__name__)
         self.flask.config["SECRET_KEY"] = token_hex(16)
-        self.flask.threaded = False  # True
+        self.flask.threaded = True
 
         self.flask.register_blueprint(web_app)
         self.flask.register_blueprint(auth_app)
 
-        login_manager = LoginManager()
-        login_manager.init_app(self.flask)
+        self.flask.app_context().push()
 
-        @login_manager.user_loader
+        self.login_manager = LoginManager()
+        self.login_manager.init_app(self.flask)
+
+        self.api = DBApi()
+        self.api.set_connection(*api_config)
+
+        @self.login_manager.user_loader
         def user_loader(user_id):
             from units import User
-            return User(user_id)
-
-        DBApi(*api_config)
+            return User(self.api.get_user_by(u_id_user=user_id))
 
     def run(self, host='0.0.0.0', debug=False, port=4000):
         self.flask.run(host=host, debug=debug, port=port)
