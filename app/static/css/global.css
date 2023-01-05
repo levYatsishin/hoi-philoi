@@ -10,7 +10,7 @@ body {
 	font-size: 12px;
 	line-height: 1.5em; 
 	background-color: #2f2e28;
-	background-image: url(templatemo_body.jpg);
+	background-image: url(..\templatemo_body.jpg);
 	background-repeat: repeat-y;
 	background-position: left;
 }
@@ -49,7 +49,7 @@ cite span { color: #666; }
 em { color: #f9a834; }
 
 .tmo_list { margin: 20px 0 20px 20px; padding: 0; list-style: none; }
-.tmo_list li { background: transparent url(templatemo_list.png) no-repeat; margin:0 0 20px; padding: 0 0 0 20px; 	line-height: 1em; }
+.tmo_list li { background: transparent url(..\templatemo_list.png) no-repeat; margin:0 0 20px; padding: 0 0 0 20px; 	line-height: 1em; }
 .tmo_list li a { color: #fff; }
 .tmo_list li a:hover { color: #ff4301; }
 
