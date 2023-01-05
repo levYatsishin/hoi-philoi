@@ -1,3 +1,4 @@
+import traceback
 from typing import Any
 import psycopg2
 
@@ -176,7 +177,8 @@ class DBApi(Singleton):
             VALUES (%s, %s, %s, %s)""", [fields[key] for key in keys])
             self.conn.commit()
 
-        except psycopg2.errors.UniqueViolation:
+        except Exception as e:
+            print(e, traceback.format_exc())
             success = False
 
         finally:

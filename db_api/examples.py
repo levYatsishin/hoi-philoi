@@ -10,7 +10,7 @@ if __name__ == "__main__":
     api_2 = DBApi('postgres', db_ip, 'admin', db_password, 5432)
     print(f"Single tone works: {api_2 is api}")
 
-    user_fields = {'name': "Вася Пупкин", 'userasname': "dvasya", 'mail': "ddds", 'password_hash': "sdcsfsdcvsdcvsdc"}
+    user_fields = {'name': "Вася Пупкин", 'username': "dv1asya", 'mail': "d2dds", 'password_hash': "sdcsfsdcvsdcvsdc"}
     print("User created:", api.create_user(user_fields))
     post_fields = {'u_id_user': 1, 'content': "hi!", 'publication_date': datetime.datetime.now()}
     print("Create post: ", api.create_post(post_fields))
@@ -22,4 +22,3 @@ if __name__ == "__main__":
     existing_posts = api.get_posts_by(u_id_post=1)
     not_existing_posts = api.get_posts_by(u_id_post=12)
     print(f"Posts exist: {existing_posts}\nPosts dont exist: {not_existing_posts}\n")
-
