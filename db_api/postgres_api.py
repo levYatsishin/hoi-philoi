@@ -50,7 +50,7 @@ def initialise_tables(conn, cursor) -> None:
     conn.commit()
 
 
-class DBApi(Singleton):
+class DBApi(metaclass=Singleton):
     def __init__(self) -> None:
         self._conn = None
         self._cursor = None

@@ -5,7 +5,7 @@ import traceback
 from patterns import Singleton
 
 
-class ImageApi(Singleton):
+class ImageApi(metaclass=Singleton):
     def __init__(self):
         self._minio_client = None
 
