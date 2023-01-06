@@ -129,6 +129,42 @@ class DBApi(metaclass=Singleton):
         else:
             return None
 
+    def get_events_by(self, **kwargs) -> list[dict[str, Any]] | None:
+        """
+        The function returns list of dicts with events info
+
+        Possible keywords arguments:
+            - u_id_event
+            - u_id_user
+
+        Example:
+            api.get_events_by(u_id_event=212) # [{'u_id_event': 212, 'u_id_user': 312, ...}, ...]
+            api.get_events_by(u_id_user=312) # [{'u_id_event': 212, 'u_id_user': 312, ...}, ...]
+            api.get_events_by(name='name') # None
+
+        :param kwargs: keywords arguments
+        :return: Return list of user ids if post exists else None
+        """
+        pass
+
+    def get_subscribers_by(self, **kwargs) -> list[int] | None:
+        """
+        This function returns list of user ids
+
+        Possible keywords arguments:
+            - u_id_user
+            - u_id_subscriber
+
+        Example:
+            api.get_users_by(u_id_user=10) # [123, 2132, 21312, ...]
+            api.get_users_by(u_id_subscriber=10) # [424, 312, ...]
+            api.get_users_by(u_id_subscriber=-1) # []
+
+        :param kwargs: keywords arguments
+        :return: Return list of user ids if post exists else None
+        """
+        pass
+
     def get_likes(self, post_id: int) -> int:
         """
         This function returns number of likes by post id
@@ -144,6 +180,15 @@ class DBApi(metaclass=Singleton):
         likes = self._cursor.fetchone()[0]
 
         return likes
+
+    def get_number_subscriptions(self, user_id: int) -> int:
+        """
+        This function returns number of subscriptions by user_id
+
+        :param user_id: user id
+        :return: Return number of subscriptions. If user does not also exist return 0
+        """
+        pass
 
     def create_user(self, fields: dict) -> bool:
         """
@@ -218,6 +263,15 @@ class DBApi(metaclass=Singleton):
         finally:
             return success
 
+    def create_event(self, fields: dict) -> bool:
+        """
+        The function create a new event in database
+
+        :param fields: dict with event fields
+        :return: Return true if post creation was successful else false
+        """
+        pass
+
     def change_like_state(self, user_id: int, post_id: int) -> bool:
         """
         This function adds or removes like from a post.
@@ -246,6 +300,16 @@ class DBApi(metaclass=Singleton):
             success = False
 
         return success
+
+    def change_subscription_state(self, user_id: int, post_id: int) -> bool:
+        """
+        The function of adding or removing subscriptions from the user
+
+        :param user_id: id of the user who subscribed the person
+        :param post_id: id of the subscribed person
+        :return: Return True if successful else False
+        """
+        pass
 
     def close_connection(self) -> None:
         """
