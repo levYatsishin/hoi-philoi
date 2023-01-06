@@ -1,10 +1,9 @@
 import traceback
-from typing import Any
 
 import psycopg2
 from loguru import logger
 
-from .patterns import Singleton
+from db_api.patterns import Singleton
 
 
 def initialise_tables(conn, cursor) -> None:
