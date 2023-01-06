@@ -2,7 +2,9 @@ import traceback
 from typing import Any
 
 import psycopg2
+
 from loguru import logger
+from parse import *
 
 from db_api.patterns import Singleton
 
@@ -46,6 +48,15 @@ def initialise_tables(conn, cursor) -> None:
                 references Users (u_id_user) on delete restrict on update cascade,
                 constraint likes_posts_fkey foreign key (u_id_post)
                 references Posts (u_id_post) on delete restrict on update cascade)
+                """)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS Subscriptions (
+                u_id_user_subscribed_to INTEGER not null,
+                u_id_user_who INTEGER not null,
+                constraint subscriptions_users_fkey foreign key (u_id_user_subscribed_to)
+                references Users (u_id_user) on delete restrict on update cascade,
+                constraint subscriptions_users_fkey2 foreign key (u_id_user_who)
+                references Users (u_id_user) on delete restrict on update cascade)
                 """)
     conn.commit()
 
@@ -158,7 +169,7 @@ class PostgresApi(metaclass=Singleton):
 
         Example:
 
-        fields.keys() = (name, username, mail, password_hash)
+        fields.keys() = ('name', 'username', 'mail', 'password_hash')
             - name: str
             - username: str
             - mail: str
@@ -188,7 +199,15 @@ class PostgresApi(metaclass=Singleton):
             logger.debug("PostgresDB: User created")
 
         except Exception as e:
-            logger.error(f"Error: {e}\n Traceback: {traceback.format_exc()}")
+            self._cursor.execute("ROLLBACK")
+            self._conn.commit()
+            if type(e) == psycopg2.errors.UniqueViolation:
+
+                violated_key = parse('duplicate key value violates unique constraint '
+                                     '"users_{}_key"', e.args[0].split('\n')[0])[0]
+                logger.warning(f"User with this {violated_key} already exists")
+            else:
+                logger.error(f"Error: {e}\n Traceback: {traceback.format_exc()}")
             success = False
 
         finally:
@@ -263,8 +282,55 @@ class PostgresApi(metaclass=Singleton):
 
         return success
 
+    def get_events_by(self, **kwargs) -> list[dict[str, Any]] | None:
+        """
+        The function returns list of dicts with events info
+        Possible keywords arguments:
+            - u_id_event
+            - u_id_user
+        Example:
+            api.get_events_by(u_id_event=212) # [{'u_id_event': 212, 'u_id_user': 312, ...}, ...]
+            api.get_events_by(u_id_user=312) # [{'u_id_event': 212, 'u_id_user': 312, ...}, ...]
+            api.get_events_by(name='name') # None
+        :param kwargs: keywords arguments
+        :return: Return list of user ids if post exists else None
+        """
+        pass
+
+    def get_subscribers_by(self, **kwargs) -> list[int] | None:
+        """
+        This function returns list of user ids
+        Possible keywords arguments:
+            - u_id_user
+            - u_id_subscriber
+        Example:
+            api.get_users_by(u_id_user=10) # [123, 2132, 21312, ...]
+            api.get_users_by(u_id_subscriber=10) # [424, 312, ...]
+            api.get_users_by(u_id_subscriber=-1) # []
+        :param kwargs: keywords arguments
+        :return: Return list of user ids if post exists else None
+        """
+        pass
+
+    def create_event(self, fields: dict) -> bool:
+        """
+        The function create a new event in database
+        :param fields: dict with event fields
+        :return: Return true if post creation was successful else false
+        """
+        pass
+
+    def change_subscription_state(self, user_id: int, post_id: int) -> bool:
+        """
+        The function of adding or removing subscriptions from the user
+        :param user_id: id of the user who subscribed the person
+        :param post_id: id of the subscribed person
+        :return: Return True if successful else False
+        """
+        pass
+
     def drop_all_tables(self) -> None:
-        self._cursor.execute("""DROP TABLE users, posts, likes""")
+        self._cursor.execute("""DROP TABLE users, posts, likes, subscriptions""")
         self._conn.commit()
         logger.debug("PostgresDB: All tables successfully dropped")
 

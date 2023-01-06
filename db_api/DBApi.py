@@ -14,8 +14,8 @@ class DBApi(metaclass=Singleton):
         """
         Connects to all data bases
 
-        :param postgres_config: postgres_config.keys() == (db_host, db_port, db_name, db_user, db_pass)
-        :param minio_config: minio_config.keys() == (address, access_key, secret_key)
+        :param postgres_config: postgres_config.keys() == ('db_host', 'db_port', 'db_name', 'db_user', 'db_pass')
+        :param minio_config: minio_config.keys() == ('address', 'access_key', 'secret_key')
         :return:
         """
 
