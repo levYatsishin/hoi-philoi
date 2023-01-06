@@ -4,6 +4,12 @@
 	padding: 20px 10px 0 70px;
 }
 
+#sign {
+    position: center;
+	width: 890px;
+	padding: 20px 10px 0 70px;
+}
+
 #user_info {
 	float: left;
 	padding-top: 50px;
