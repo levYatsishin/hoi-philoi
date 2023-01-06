@@ -1,3 +1,3 @@
-from .postgres_api import DBApi
+from .postgres_api import PostgresApi
 from .images_api import ImageApi
 

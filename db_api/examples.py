@@ -1,6 +1,6 @@
 import time
 
-from postgres_api import DBApi
+from postgres_api import PostgresApi
 from images_api import ImageApi
 import datetime
 import os
@@ -13,13 +13,14 @@ MINIO_ACCESS_KEY = os.environ["MINIO_ACCESS_KEY"]
 MINIO_SECRET_KEY = os.environ["MINIO_SECRET_KEY"]
 
 if __name__ == "__main__":
-    db_api = DBApi()
-    db_api2 = DBApi()
+    db_api = PostgresApi()
+    db_api2 = PostgresApi()
     db_api.connect(DB_IP, '5432', 'postgres', 'admin', DB_PASSWORD)
-    db_api3 = DBApi()
+    db_api3 = PostgresApi()
 
     print(f"Singleton is working: {db_api is db_api3}")
     print(db_api3.get_user_by(u_id_user=13))
+    db_api.close_connection()
 
     image_api = ImageApi()
     image_api.connect(MINIO_API_HOST, MINIO_ACCESS_KEY, MINIO_SECRET_KEY)

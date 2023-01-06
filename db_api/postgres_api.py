@@ -50,12 +50,13 @@ def initialise_tables(conn, cursor) -> None:
     conn.commit()
 
 
-class DBApi(metaclass=Singleton):
+class PostgresApi(metaclass=Singleton):
     def __init__(self) -> None:
         self._conn = None
         self._cursor = None
 
     def connect(self, db_host, db_port, db_name, db_user, db_pass) -> None:
+        logger.debug("Connecting to DB")
         self._conn = psycopg2.connect(database=db_name,
                                       host=db_host,
                                       user=db_user,
@@ -63,6 +64,7 @@ class DBApi(metaclass=Singleton):
                                       port=db_port)
         self._cursor = self._conn.cursor()
         initialise_tables(self._conn, self._cursor)
+        logger.debug("Connected to DB")
 
     def get_user_by(self, **kwargs) -> dict | None:
         """
@@ -247,10 +249,19 @@ class DBApi(metaclass=Singleton):
 
         return success
 
+    def _drop_all_tables(self) -> None:
+
+        self._cursor.execute("""DROP SCHEMA public CASCADE""")
+        self._conn.commit()
+        self._cursor.execute("""CREATE SCHEMA public""")
+        print("Dropped successfully")
+
     def close_connection(self) -> None:
         """
         Closes connection to the Data Base
         """
 
-        self._conn.clsoe()
-        self._cursor.clsoe()
+        self._conn.close()
+        self._cursor.close()
+
+
