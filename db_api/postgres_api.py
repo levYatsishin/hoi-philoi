@@ -4,7 +4,7 @@ from typing import Any
 import psycopg2
 
 from loguru import logger
-from parse import *
+from parse import parse
 
 from db_api.patterns import Singleton
 
