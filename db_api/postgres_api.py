@@ -22,7 +22,7 @@ def initialise_tables(conn, cursor) -> None:
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Users (
-                u_id_user SERIAL PRIMARY KEY not null,
+                u_id SERIAL PRIMARY KEY not null,
                 name VARCHAR(100) not null, 
                 username VARCHAR(50) not null unique,
                 mail  VARCHAR(500) not null unique,
@@ -33,7 +33,7 @@ def initialise_tables(conn, cursor) -> None:
                 """)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Posts (
-                u_id_post SERIAL PRIMARY KEY not null ,
+                u_id SERIAL PRIMARY KEY not null ,
                 u_id_user INTEGER not null,
                 content VARCHAR not null,
                 publication_date timestamp without time zone not null,
@@ -60,7 +60,7 @@ def initialise_tables(conn, cursor) -> None:
                 """)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Events (
-                u_id_event SERIAL PRIMARY KEY not null ,
+                u_id SERIAL PRIMARY KEY not null ,
                 u_id_user INTEGER not null,
                 content VARCHAR not null,
                 publication_date timestamp without time zone not null,
@@ -164,7 +164,7 @@ class PostgresApi(metaclass=Singleton):
 
         return success
 
-    def _generic_get_by(self, table: str, parameter: str, value: str | int) -> list[dict] | None:
+    def _generic_get_by(self, table: str, parameter: str, value: str | int, offset=10) -> list[dict] | None:
         """
         This is a generic function for getting rows from the Data Bast
 
@@ -174,7 +174,8 @@ class PostgresApi(metaclass=Singleton):
         :return:
         """
 
-        self._cursor.execute(f""" SELECT * FROM {table} WHERE {parameter} = %s""", (value,))
+        self._cursor.execute(f""" SELECT * FROM {table} WHERE {parameter} = %s
+                                  order by u_id desc limit {offset}""", (value,))
         info = self._cursor.fetchall()
 
         if info:
@@ -272,7 +273,7 @@ class PostgresApi(metaclass=Singleton):
         This function returns dict with user info
 
         Possible parameters:
-        - 'u_id_user'
+        - 'u_id'
         - 'username'
         - 'mail'
 
@@ -287,8 +288,8 @@ class PostgresApi(metaclass=Singleton):
         """
         This function returns list of dicts with posts info
 
-        Possible keywords arguments:
-            - u_id_post
+         Possible parameters:
+            - u_id
             - u_id_user
 
         :param parameter: by what column the search happens
@@ -302,7 +303,7 @@ class PostgresApi(metaclass=Singleton):
         """
         The function returns list of dicts with events info
         Possible keywords arguments:
-            - u_id_event
+            - u_id
             - u_id_user
 
         :param parameter: by what column the search happens
