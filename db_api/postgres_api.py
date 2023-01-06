@@ -56,7 +56,7 @@ class PostgresApi(metaclass=Singleton):
         self._cursor = None
 
     def connect(self, db_host, db_port, db_name, db_user, db_pass) -> None:
-        logger.debug("Connecting to DB")
+        logger.debug("PostgresDB: Connecting")
         self._conn = psycopg2.connect(database=db_name,
                                       host=db_host,
                                       user=db_user,
@@ -64,7 +64,7 @@ class PostgresApi(metaclass=Singleton):
                                       port=db_port)
         self._cursor = self._conn.cursor()
         initialise_tables(self._conn, self._cursor)
-        logger.debug("Connected to DB")
+        logger.debug("PostgresDB: Connected")
 
     def get_user_by(self, **kwargs) -> dict | None:
         """
@@ -95,8 +95,10 @@ class PostgresApi(metaclass=Singleton):
             rows = self._cursor.fetchall()
             rows = [col_name[0] for col_name in rows]
 
+            logger.debug("PostgresDB: User retrieved")
             return dict(zip(rows, user_info))
         else:
+            logger.debug("PostgresDB: No users found")
             return None
 
     def get_posts_by(self, **kwargs) -> list[dict[str, Any]] | None:
@@ -127,8 +129,10 @@ class PostgresApi(metaclass=Singleton):
             rows = self._cursor.fetchall()
             rows = [col_name[0] for col_name in rows]
 
+            logger.debug("PostgresDB: Post retrieved")
             return [dict(zip(rows, post)) for post in posts]
         else:
+            logger.debug("PostgresDB: No posts found")
             return None
 
     def get_likes(self, post_id: int) -> int:
@@ -145,6 +149,7 @@ class PostgresApi(metaclass=Singleton):
         self._cursor.execute(f""" SELECT count(*) FROM likes WHERE u_id_post = %s""", (post_id,))
         likes = self._cursor.fetchone()[0]
 
+        logger.debug("PostgresDB: Like retrieved")
         return likes
 
     def create_user(self, fields: dict) -> bool:
@@ -171,12 +176,16 @@ class PostgresApi(metaclass=Singleton):
 
         keys = ['name', 'username', 'mail', 'password_hash']
         if list(fields.keys()) != keys:
+
+            logger.debug("PostgresDB: Invalid keys in input dictionary")
             return False
 
         try:
             self._cursor.execute(f"""INSERT INTO users (name, username, mail, password_hash)
             VALUES (%s, %s, %s, %s)""", [fields[key] for key in keys])
             self._conn.commit()
+
+            logger.debug("PostgresDB: User created")
 
         except Exception as e:
             logger.error(f"Error: {e}\n Traceback: {traceback.format_exc()}")
@@ -207,11 +216,14 @@ class PostgresApi(metaclass=Singleton):
 
         keys = ['u_id_user', 'content', 'publication_date']
         if list(fields.keys()) != keys:
+
+            logger.debug("PostgresDB: Invalid keys in input dictionary")
             return False
         try:
             self._cursor.execute(f"""INSERT INTO posts (u_id_user, content, publication_date)
                                     VALUES (%s, %s, %s)""", [fields[key] for key in keys])
             self._conn.commit()
+            logger.debug("PostgresDB: Post created")
 
         except Exception as e:
             logger.error(f"Error: {e}\n Traceback: {traceback.format_exc()}")
@@ -243,18 +255,18 @@ class PostgresApi(metaclass=Singleton):
                 self._cursor.execute(f"""DELETE FROM likes WHERE u_id_post = %s AND u_id_user = %s""",
                                      (post_id, user_id))
                 self._conn.commit()
+            logger.debug("PostgresDB: Like state changed")
+
         except Exception as e:
             logger.error(f"Error: {e}\n Traceback: {traceback.format_exc()}")
             success = False
 
         return success
 
-    def _drop_all_tables(self) -> None:
-
-        self._cursor.execute("""DROP SCHEMA public CASCADE""")
+    def drop_all_tables(self) -> None:
+        self._cursor.execute("""DROP TABLE users, posts, likes""")
         self._conn.commit()
-        self._cursor.execute("""CREATE SCHEMA public""")
-        print("Dropped successfully")
+        logger.debug("PostgresDB: All tables successfully dropped")
 
     def close_connection(self) -> None:
         """
@@ -262,6 +274,5 @@ class PostgresApi(metaclass=Singleton):
         """
 
         self._conn.close()
-        self._cursor.close()
-
+        logger.debug("PostgresDB: Connection closed")
 
