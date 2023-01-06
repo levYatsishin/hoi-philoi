@@ -2,3 +2,5 @@
 /idea/
 /mypy_cache/
 /secret_key
+/.venv/
+/.idea/

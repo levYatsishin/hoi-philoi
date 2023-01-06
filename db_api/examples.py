@@ -1,5 +1,8 @@
+import time
+
 from postgres_api import DBApi
 from images_api import ImageApi
+import datetime
 import os
 
 DB_PASSWORD = os.environ["POSTGRES_PASS"]
@@ -16,6 +19,7 @@ if __name__ == "__main__":
     db_api3 = DBApi()
 
     print(f"Singleton is working: {db_api is db_api3}")
+    print(db_api3.get_user_by(u_id_user=13))
 
     image_api = ImageApi()
     image_api.connect(MINIO_API_HOST, MINIO_ACCESS_KEY, MINIO_SECRET_KEY)

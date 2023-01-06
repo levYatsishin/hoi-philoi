@@ -1,10 +1,9 @@
 import traceback
-from typing import Any
 
 import psycopg2
 from loguru import logger
 
-from .patterns import Singleton
+from db_api.patterns import Singleton
 
 
 def initialise_tables(conn, cursor) -> None:
@@ -97,7 +96,7 @@ class DBApi(metaclass=Singleton):
         else:
             return None
 
-    def get_posts_by(self, **kwargs) -> list[dict[str, Any]] | None:
+    def get_posts_by(self, **kwargs) -> list[dict[str, any]] | None:
         """
         This function returns list of dicts with posts info
 

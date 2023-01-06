@@ -2,7 +2,7 @@ from minio import Minio
 from loguru import logger
 import traceback
 
-from .patterns import Singleton
+from db_api.patterns import Singleton
 
 
 class ImageApi(metaclass=Singleton):
