@@ -1,5 +1,4 @@
 import traceback
-from typing import Any
 
 import psycopg2
 from loguru import logger
