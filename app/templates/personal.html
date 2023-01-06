@@ -34,7 +34,7 @@
                 <!-- form.subscribe() -->
             {% endif %}
         {% endif %}
-        <a href="/subscribers/{{username}}" id="subscribers"> Subscribers</a>
+        <a href="/subscritions/{{username}}" id="subscritions"> Subscribtions</a>
     </ul>
 
     <div id="templatemo_main">
@@ -52,6 +52,7 @@
                         <p>{{post['content']}}</p>
 
                         <div class="btn_more"><a href="#{{post['u_id_post'] + 1}}">next <span>&raquo;</span></a></div>
+                        <div class="btn_more"><a href="#{{post['u_id_post'] - 1}}"><span>&laquo;</span> prev </a></div>
                     </div>
                     {% endfor %}
                 </div>
