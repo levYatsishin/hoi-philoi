@@ -10,6 +10,16 @@
 	margin-left: 300px;
 }
 
+#error {
+	position: center;
+	margin-top: 200px;
+	text-align: center;
+}
+
+#error h1 {
+	font-size: xx-large;
+}
+
 #user_info {
 	float: left;
 	padding-top: 50px;
