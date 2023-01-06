@@ -96,7 +96,7 @@ class DBApi(metaclass=Singleton):
         else:
             return None
 
-    def get_posts_by(self, **kwargs) -> list[dict[str, Any]] | None:
+    def get_posts_by(self, **kwargs) -> list[dict[str, any]] | None:
         """
         This function returns list of dicts with posts info
 
