@@ -17,15 +17,25 @@
 </head>
 <body>
 <div id="slider">
-    <div id="user_info">
-        <p><img src="{{person['image_reference']}}"></p>
-        <p>{{person['username']}}</p>
-        <p>{{person['bio']}}</p>
-        <p>{{person['mail']}}</p>
-        <p>{{person['location']}}</p>
-        <p>{{person['tags']}}</p>
-
-    </div>
+    <ul id="user_info">
+        <li><img src="{{person['image_reference']}}"></li>
+        <li>{{person['username']}}</li>
+        <li>{{person['bio']}}</li>
+        <li>{{person['mail']}}</li>
+        <li>{{person['location']}}</li>
+        <li>{{person['tags']}}</li>
+        
+        {% if person['username'] != username %}
+            {% if user_subscribed %}
+                Unsubscribe
+                <!-- form.unsubscribe()  -->
+            {% else %}
+                Subscribe
+                <!-- form.subscribe() -->
+            {% endif %}
+        {% endif %}
+        <a href="/subscribers/{{username}}" id="subscribers"> Subscribers</a>
+    </ul>
 
     <div id="templatemo_main">
         <ul id="header">
@@ -38,7 +48,7 @@
                 <div class="scrollContainer">
                     {% for post in posts %}
                     <div class="panel" id="{{post['u_id_post']}}">
-                        <img src="{{post['image_reference ']}}" alt="image"/>
+                        <img src="{{post['image_reference']}}"/>
                         <p>{{post['content']}}</p>
 
                         <div class="btn_more"><a href="#{{post['u_id_post'] + 1}}">next <span>&raquo;</span></a></div>
@@ -50,7 +60,7 @@
 
         <div id="templatemo_footer">
 
-            Copyright © 2023 <a href="#">οἱ φίλοι</a>
+            Copyright © 2023 οἱ φίλοι
 
         </div>
     </div>
