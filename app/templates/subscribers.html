@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Subscribers</title>
+</head>
+<body>
+    {% for user in subscribers %}
+    <div><a href="/person/{{user['username']}}">user['name']</a></div>
+    {% endfor %}
+</body>
+</html>

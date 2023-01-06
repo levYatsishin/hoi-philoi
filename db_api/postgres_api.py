@@ -128,7 +128,7 @@ class DBApi(metaclass=Singleton):
         else:
             return None
 
-    def get_events_by(self, **kwargs) -> list[dict[str, Any]] | None:
+    def get_events_by(self, **kwargs) -> list[dict[str, any]] | None:
         """
         The function returns list of dicts with events info
 
@@ -300,12 +300,12 @@ class DBApi(metaclass=Singleton):
 
         return success
 
-    def change_subscription_state(self, user_id: int, post_id: int) -> bool:
+    def change_subscription_state(self, user_id: int, subscriber_id: int) -> bool:
         """
         The function of adding or removing subscriptions from the user
 
         :param user_id: id of the user who subscribed the person
-        :param post_id: id of the subscribed person
+        :param subscriber_id: id of the subscribed person
         :return: Return True if successful else False
         """
         pass

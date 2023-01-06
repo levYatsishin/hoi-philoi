@@ -6,7 +6,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from .forms import LoginForm, RegisterForm
 from . import auth_app
 
-from units import User
+from app.units import User
 from db_api import DBApi
 
 __all__ = []
