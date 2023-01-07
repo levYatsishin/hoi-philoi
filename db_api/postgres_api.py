@@ -175,10 +175,10 @@ class PostgresApi(metaclass=Singleton):
         :return:
         """
 
-        result = self._cursor.execute(f""" SELECT * FROM {table} WHERE {parameter} = %s
+        self._cursor.execute(f""" SELECT * FROM {table} WHERE {parameter} = %s
                                   order by u_id desc limit {limit}""", (value,))
 
-        info = result.fetchall()
+        info = self._cursor.fetchall()
 
         if info:
             self._cursor.execute(f"""SELECT column_name
