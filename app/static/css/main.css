@@ -61,7 +61,7 @@
 	font-size: x-large;
 }
 
-#subscibers {
+#subscribers {
 	width: 48px;
 	height: 48px;
 	margin-right: 40px;
@@ -86,9 +86,10 @@
 }
 
 .scrollContainer div.panel {
-    padding: 30px;
-    height: 395px;
-    width: 540px;
+    padding: 20px;
+    border: dashed #886;
+    /* height: 395px;
+    width: 540px; */
 }
 
 .hide {

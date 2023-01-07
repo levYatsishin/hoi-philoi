@@ -6,6 +6,7 @@
     <li>{{person['mail']}}</li>
     <li>{{person['bio']}}</li>
     <li>{{person['location']}}</li>
+    <li>Tags:</li>
     <li><ul>
         {% if person['tags'] is not none %}
             {% for tag in person['tags'] %}
@@ -34,10 +35,6 @@
                 <img src="{{post['image_reference']}}"/>
                 <p>{{post['content']}}</p>
             </div>
-            
-            {% if False %}
-                Join {{form.join()}}
-            {% endif %}
             {% endfor %}
         </div>
     </div>

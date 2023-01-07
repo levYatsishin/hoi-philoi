@@ -14,7 +14,16 @@ __all__ = []
 def index() -> str:
     api = PostgresApi()
 
-    events = api.get_events_by('u_id', current_user.get_data()['u_id'])
+    events = []
+
+    for user_id in api.get_subscribers_by('u_id_user_who', current_user.get_data()['u_id']):
+        user_events = api.get_events_by('u_id_user', user_id)
+
+        if user_events is None:
+            continue
+
+        for event in user_events:
+            events.append(event)
 
     return render_template('index.html', events=events)
 
@@ -33,13 +42,21 @@ def personal(username='') -> Any:
         return abort(404)
 
     posts = api.get_posts_by('u_id_user', person['u_id'])
-    print(posts)
     posts = posts if posts is not None else []
 
     user_subscribed = api.is_subscribed(current_user.get_data()['u_id'], person['u_id'])
 
     return render_template('personal.html', person=person, posts=posts, user_subscribed=user_subscribed,
                            username=current_user.get_data()['username'])
+
+
+@web_app.route('/person/<username>/edit')
+@login_required
+def edit_profile(username):
+    if current_user.get_data()['username'] != username:
+        return redirect('/')
+
+    return """<h1>Fuck you</h1"""
 
 
 @web_app.route('/person/<username>/subscribers')
@@ -51,7 +68,7 @@ def subscribers(username) -> Any:
     if person is None:
         return abort(404)
 
-    subscribers_ids = api.get_subscribers_by('u_id_user_subscribed_to', person['u_id'])
+    subscribers_ids = api.get_subscribers_by('u_id_user_who', person['u_id'])
 
     user_subscribers = []
 
