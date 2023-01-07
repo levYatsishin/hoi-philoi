@@ -35,7 +35,9 @@ def personal(username='') -> Any:
     posts = api.get_posts_by('u_id_user', person['u_id'])
     posts = posts if posts is not None else []
 
-    return render_template('personal.html', person=person, posts=posts, user_subscribed=False,
+    user_subscribed = api.is_subscribed(current_user.get_data()['u_id'], person['u_id'])
+
+    return render_template('personal.html', person=person, posts=posts, user_subscribed=user_subscribed,
                            username=current_user.get_data()['username'])
 
 
