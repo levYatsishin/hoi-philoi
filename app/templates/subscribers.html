@@ -4,11 +4,9 @@
     <div class="scroll">
         <div class="scrollContainer">
             {% for subscriber in subscribers %}
-            <div class="panel" id="{{subscriber['u_id_user']}}">
+            <div class="panel">
                 <img src="{{subscriber['image_reference']}}"/>
                 <p>{{subscriber['username']}}</p>
-
-                <div class="btn_more"><a href="#{{subscriber['u_id_user'] + 1}}">next<span>&raquo;</span></a></div>
             </div>
             {% endfor %}
         </div>
