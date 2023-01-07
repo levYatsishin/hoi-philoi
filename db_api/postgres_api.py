@@ -2,7 +2,6 @@ import traceback
 from typing import Any
 
 import psycopg2
-
 from loguru import logger
 from parse import parse
 
@@ -129,7 +128,7 @@ class PostgresApi(metaclass=Singleton):
 
     def _generic_change_state(self, table, input_info: dict) -> bool:
         """
-        This is a generic function for changing state of some of the 2-states parameters in the Data Base
+        This is a generic function for changing state of some 2-states parameters in the Data Base
 
         :param table: id of first entity of the process
         :param input_info: what row to change if form of {column: value, column, value}
@@ -362,4 +361,3 @@ class PostgresApi(metaclass=Singleton):
 
         self._conn.close()
         logger.debug("PostgresDB: Connection closed")
-

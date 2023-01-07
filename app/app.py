@@ -9,7 +9,7 @@ from app.auth import auth_app
 from app.errors import error_handler
 from app.website import web_app
 
-from db_api import DBApi
+from db_api import PostgresApi
 
 __all__ = ['App']
 
@@ -19,6 +19,8 @@ class App:
         self.flask: Flask = Flask(__name__)
 
         config = dotenv_values('.env')
+
+        self.debug = config['DEBUG']
 
         self.flask.config["SECRET_KEY"] = config['SECRET_KEY']
         self.flask.threaded = True
@@ -30,21 +32,22 @@ class App:
         self.login_manager = LoginManager()
         self.login_manager.init_app(self.flask)
 
-        self.api = DBApi()
-        self.api.connect(
-            *[config['POSTGRES_IP'], config['POSTGRES_PORT'], config['POSTGRES_DB'], config['POSTGRES_USER'],
-              config["POSTGRES_PASS"]])
+        del config['SECRET_KEY']
+        del config['DEBUG']
 
-        atexit.register(self.stop())
+        self.api = PostgresApi()
+        self.api.connect(*[x[1] for x in config.items()])
+
+        atexit.register(self.stop)
 
         @self.login_manager.user_loader
         def user_loader(user_id):
             from units import User
-            return User(self.api.get_user_by(u_id_user=user_id))
+            return User(self.api.get_user_by('u_id', user_id))
 
     def run(self, host='0.0.0.0', debug=False, port=4000):
         self.flask.run(host=host, debug=debug, port=port)
 
     @staticmethod
     def stop():
-        DBApi().close_connection()
+        PostgresApi().close_connection()

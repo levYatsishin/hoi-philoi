@@ -1,8 +1,6 @@
-import time
-
 from images_api import ImageApi
 from postgres_api import PostgresApi
-import datetime
+from datetime import datetime
 import os
 
 DB_PASSWORD = os.environ["POSTGRES_PASS"]
@@ -23,14 +21,16 @@ if __name__ == "__main__":
     postgres_api.connect(**postgres_conf)
     image_api.connect(**minio_conf)
 
-    print(postgres_api.get_user_by('u_id', 1))
-    postgres_api.create_post()
+    postgres_api.create_user({'name': "Иван Ларин", 'username': "larin", 'mail': "l@l.ru", 'password_hash': "pass"})
+    postgres_api.create_event({'u_id_user': 1, 'content': "Встреча", 'publication_date': datetime.now(),
+                               'time_start': datetime.now(), 'time_end': datetime.now(), 'location': "Головинка"})
 
-    # with open('../mushrooms.jpg', 'rb') as file:
-    #     size = os.stat('../mushrooms.jpg').st_size
-    #     image_api.upload_image(file, 'mushrooms.jpg', size)
+    postgres_api.create_post({'u_id_user': 1, 'content': 'hi', 'publication_date': datetime.now()})
+    postgres_api.change_like_state(1, 1)
 
-    data = image_api.get_image("mushrooms.jpg")
+    postgres_api.close_connection()
+
+    data: bytes = image_api.get_image("mushrooms.jpg")
     with open('downloaded_mushrooms.jpg', 'wb') as file_data:
         for d in data.stream(32*1024):
             file_data.write(d)
