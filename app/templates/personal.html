@@ -6,7 +6,7 @@
     <li>{{person['bio']}}</li>
     <li>{{person['mail']}}</li>
     <li>{{person['location']}}</li>
-    <li><ul>
+    <li>Tags: <ul>
         {% for tag in person['tags'] %}
             <li id="tag">{{tag}}</li>
         {% endfor %}
