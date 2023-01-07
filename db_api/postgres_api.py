@@ -67,7 +67,7 @@ def initialise_tables(conn, cursor) -> None:
                 time_start timestamp without time zone not null,
                 time_end timestamp without time zone not null,
                 location VARCHAR not null,
-                constraint posts_users_fkey foreign key (u_id)
+                constraint events_users_fkey foreign key (u_id_user)
                 references Users (u_id) on delete restrict on update cascade)
                 """)
     conn.commit()
@@ -165,7 +165,7 @@ class PostgresApi(metaclass=Singleton):
 
         return success
 
-    def _generic_get_by(self, table: str, parameter: str, value: str | int, offset=10) -> list[dict] | None:
+    def _generic_get_by(self, table: str, parameter: str, value: str | int, limit=10) -> list[dict] | None:
         """
         This is a generic function for getting rows from the Data Bast
 
@@ -176,7 +176,7 @@ class PostgresApi(metaclass=Singleton):
         """
 
         self._cursor.execute(f""" SELECT * FROM {table} WHERE {parameter} = %s
-                                  order by u_id desc limit {offset}""", (value,))
+                                  order by u_id desc limit {limit}""", (value,))
         info = self._cursor.fetchall()
 
         if info:
@@ -351,7 +351,7 @@ class PostgresApi(metaclass=Singleton):
         return likes
 
     def _drop_all_tables(self) -> None:
-        self._cursor.execute("""DROP TABLE users, posts, events,likes, subscriptions""")
+        self._cursor.execute("""DROP TABLE users, posts, events, likes, subscriptions""")
         self._conn.commit()
         logger.debug("PostgresDB: All tables successfully dropped")
 
