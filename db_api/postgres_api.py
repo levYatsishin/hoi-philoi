@@ -18,8 +18,6 @@ def initialise_tables(conn, cursor) -> None:
     :return:
     """
 
-    # TODO: add image ref
-
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Users (
                 u_id SERIAL PRIMARY KEY not null,
@@ -27,6 +25,7 @@ def initialise_tables(conn, cursor) -> None:
                 username VARCHAR(50) not null unique,
                 mail  VARCHAR(500) not null unique,
                 password_hash VARCHAR(500) not null, 
+                image VARCHAR,
                 location VARCHAR(500),
                 bio VARCHAR,
                 tags VARCHAR)
@@ -37,6 +36,7 @@ def initialise_tables(conn, cursor) -> None:
                 u_id_user INTEGER not null,
                 content VARCHAR not null,
                 publication_date timestamp without time zone not null,
+                image VARCHAR,
                 constraint posts_users_fkey foreign key (u_id_user)
                 references Users (u_id) on delete restrict on update cascade)
                 """)
@@ -67,6 +67,7 @@ def initialise_tables(conn, cursor) -> None:
                 time_start timestamp without time zone not null,
                 time_end timestamp without time zone not null,
                 location VARCHAR not null,
+                image VARCHAR,
                 constraint events_users_fkey foreign key (u_id_user)
                 references Users (u_id) on delete restrict on update cascade)
                 """)
@@ -261,8 +262,9 @@ class PostgresApi(metaclass=Singleton):
     def change_subscription_state(self, user_id_who_subscribing: int, user_id_subscribing_to: int) -> bool:
         """
         The function of adding or removing subscriptions from the user
-        :param user_id_who_subscribing: id of the user who subscribed the person
-        :param user_id_subscribing_to: id of the subscribed person
+
+        :param user_id_who_subscribing: id of the user who subscribed to the person(user_id_subscribing_to)
+        :param user_id_subscribing_to: id of the user with new subscription
         :return: Return True if successful else False
         """
         info = {'u_id_user_who': user_id_who_subscribing, 'u_id_user_subscribed_to': user_id_subscribing_to}
@@ -275,6 +277,7 @@ class PostgresApi(metaclass=Singleton):
 
         Possible parameters:
         - 'u_id'
+            - user id
         - 'username'
         - 'mail'
 
@@ -291,7 +294,9 @@ class PostgresApi(metaclass=Singleton):
 
          Possible parameters:
             - u_id
+                - id of the post
             - u_id_user
+                - id of the user(to get all his posts)
 
         :param parameter: by what column the search happens
         :param value: for which value the search happens
@@ -305,7 +310,9 @@ class PostgresApi(metaclass=Singleton):
         The function returns list of dicts with events info
         Possible keywords arguments:
             - u_id
+                - id of the event
             - u_id_user
+                - id of the user(to get all his events)
 
         :param parameter: by what column the search happens
         :param value: for which value the search happens
@@ -319,7 +326,10 @@ class PostgresApi(metaclass=Singleton):
         This function returns list of user ids
         Possible keywords arguments:
             - u_id_user_who
+                - id of the user who subscribed to the person(user_id_subscribing_to)
             - u_id_user_subscribed_to
+                - id of the user with mew subscription
+
 
         :param parameter: by what column the search happens
         :param value: for which value the search happens
@@ -349,6 +359,25 @@ class PostgresApi(metaclass=Singleton):
 
         logger.debug("PostgresDB: Like retrieved")
         return likes
+
+    def is_subscribed(self, user_id_who_subscribing: int, user_id_subscribing_to: int) -> bool:
+        """
+
+        :param user_id_who_subscribing: id of the user who subscribed to the person(user_id_subscribing_to)
+        :param user_id_subscribing_to: id of the user with new subscription
+        :return: True if user_id_who_subscribing sis subscribed to user_id_subscribing_to
+        """
+
+        self._cursor.execute(f"""SELECT count(*) FROM subscriptions
+                                        WHERE u_id_user_subscribed_to = %s and u_id_user_who = %s""",
+                             (user_id_subscribing_to, user_id_who_subscribing,))
+
+        is_subscribed = self._cursor.fetchone()[0]
+
+        if is_subscribed:
+            return True
+        else:
+            return False
 
     def _drop_all_tables(self) -> None:
         self._cursor.execute("""DROP TABLE users, posts, events, likes, subscriptions""")
