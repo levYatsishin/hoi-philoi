@@ -4,9 +4,10 @@ from datetime import datetime
 import os
 from dotenv import load_dotenv
 
+load_dotenv()
+
 DB_PASSWORD = os.getenv("POSTGRES_PASS")
 DB_IP = os.getenv("POSTGRES_IP")
-
 MINIO_API_HOST = os.getenv("POSTGRES_IP") + ":9000"
 MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY")
 MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY")
@@ -28,8 +29,8 @@ if __name__ == "__main__":
 
     postgres_api.create_post({'u_id_user': 1, 'content': 'hi', 'publication_date': datetime.now()})
     postgres_api.change_like_state(1, 1)
+    print(postgres_api.get_user_by('u_id', 4))
 
-    postgres_api.get_user_by('username', 'denis_indenbom')
     # data = image_api.get_image("mushrooms.jpg")
     # with open('downloaded_mushrooms.jpg', 'wb') as file_data:
     #     for d in data.stream(32*1024):

@@ -20,22 +20,22 @@ def initialise_tables(conn, cursor) -> None:
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Users (
                 u_id SERIAL PRIMARY KEY not null,
-                name VARCHAR(100) not null, 
-                username VARCHAR(50) not null unique,
-                mail  VARCHAR(500) not null unique,
-                password_hash VARCHAR(500) not null, 
-                image VARCHAR,
-                location VARCHAR(500),
-                bio VARCHAR,
-                tags VARCHAR)
+                name text not null, 
+                username text not null unique,
+                mail  text not null unique,
+                password_hash text not null, 
+                image text,
+                location text,
+                bio text,
+                tags text[])
                 """)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Posts (
                 u_id SERIAL PRIMARY KEY not null ,
                 u_id_user INTEGER not null,
-                content VARCHAR not null,
+                content text not null,
                 publication_date timestamp without time zone not null,
-                image VARCHAR,
+                image text,
                 constraint posts_users_fkey foreign key (u_id_user)
                 references Users (u_id) on delete restrict on update cascade)
                 """)
@@ -61,12 +61,12 @@ def initialise_tables(conn, cursor) -> None:
     CREATE TABLE IF NOT EXISTS Events (
                 u_id SERIAL PRIMARY KEY not null ,
                 u_id_user INTEGER not null,
-                content VARCHAR not null,
+                content text not null,
                 publication_date timestamp without time zone not null,
                 time_start timestamp without time zone not null,
                 time_end timestamp without time zone not null,
-                location VARCHAR not null,
-                image VARCHAR,
+                location text not null,
+                image text,
                 constraint events_users_fkey foreign key (u_id_user)
                 references Users (u_id) on delete restrict on update cascade)
                 """)
@@ -177,6 +177,7 @@ class PostgresApi(metaclass=Singleton):
 
         self._cursor.execute(f""" SELECT * FROM {table} WHERE {parameter} = %s
                                   order by u_id desc limit {limit}""", (value,))
+
         info = self._cursor.fetchall()
 
         if info:
