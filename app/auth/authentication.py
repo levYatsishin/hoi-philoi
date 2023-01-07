@@ -6,8 +6,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from .forms import LoginForm, RegisterForm
 from . import auth_app
 
-from units import User
-from db_api import DBApi
+from app.units import User
+from db_api import PostgresApi
 
 __all__ = []
 
@@ -17,7 +17,7 @@ def login():
     form = LoginForm()
 
     if request.method == 'POST':
-        user = DBApi().get_user_by(username=form.login.data)
+        user = PostgresApi().get_user_by('username', form.login.data)
 
         if user is not None and check_password_hash(user['password_hash'], form.password.data):
             login_user(User(user), remember=True)
@@ -32,7 +32,7 @@ def register():
     form = RegisterForm()
 
     if request.method == 'POST':
-        success = DBApi().create_user(
+        success = PostgresApi().create_user(
             {'name': form.name.data, 'username': form.username.data, 'mail': form.mail.data,
              'password_hash': str(generate_password_hash(form.password.data))})
 

@@ -7,18 +7,17 @@
     <li>{{person['mail']}}</li>
     <li>{{person['location']}}</li>
     <li>{{person['tags']}}</li>
-    
+
     {% if person['username'] != username %}
         {% if user_subscribed %}
-            Unsubscribe
-            <!-- form.unsubscribe()  -->
+            <a href="#subscribe">Unsubscribe</a>
         {% else %}
-            Subscribe
-            <!-- form.subscribe() -->
+            <a href="#subscribe">Subscribe</a>
         {% endif %}
     {% endif %}
-    <a href="/subscritions/{{username}}" id="subscritions"> Subscribtions</a>
+    <a href="#subscribers" id="subscriptions">Subscriptions</a>
 </ul>
+
 {% endblock %}
 {% block content %}
 <div id="content">
