@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime
 
 from flask import request, redirect, render_template
 from flask_login import current_user
@@ -21,16 +21,16 @@ def create_event():
 
         successful = api.create_event(
             {'u_id_user': current_user.get_data()['u_id'], 'content': form.content.data,
-             'publication_date': date.today(), 'time_start': form.time_start.data, 'time_end': form.time_end.data,
+             'publication_date': datetime.now(), 'time_start': form.time_start.data, 'time_end': form.time_end.data,
              'location': form.locate.data})
 
         if successful:
             return redirect('/')
 
-    return render_template('make_event.html', form=form, successful=successful)
+    return render_template('create_event.html', form=form, successful=successful)
 
 
-@pub_app.route('/create_postt', methods=['GET', 'POST'])
+@pub_app.route('/create_post', methods=['GET', 'POST'])
 def create_post():
     form = Post()
 
@@ -41,9 +41,9 @@ def create_post():
 
         successful = api.create_post(
             {'u_id_user': current_user.get_data()['u_id'], 'content': form.content.data,
-             'publication_date': date.today()})
+             'publication_date': datetime.now()})
 
         if successful:
             return redirect('/')
 
-    return render_template('make_postt.html', form=form, successful=successful)
+    return render_template('create_post.html', form=form, successful=successful)

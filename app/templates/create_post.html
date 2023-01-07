@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="panel">
+    <h1>Post</h1>
+    <div id="sign_form">
+        <form method="post">
+            <div><h4>Description <br> {{form.content()}}</h4></div>
+
+            <div><h4>Image url <br> {{form.image_url()}}</h4></div>
+            <br>
+            {{form.submit()}}
+            <a href="/create_event" >Make event</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

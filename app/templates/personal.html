@@ -7,9 +7,11 @@
     <li>{{person['bio']}}</li>
     <li>{{person['location']}}</li>
     <li><ul>
-        {% for tag in person['tags'] %}
-            <li id="tag">{{tag}}</li>
-        {% endfor %}
+        {% if person['tags'] is not none %}
+            {% for tag in person['tags'] %}
+                <li id="tag">{{tag}}</li>
+            {% endfor %}
+        {% endif %}
     </ul></li>
 
     {% if person['username'] != username %}
@@ -33,13 +35,9 @@
                 <p>{{post['content']}}</p>
             </div>
             
-            {% if post['is_event'] %}
+            {% if False %}
                 Join {{form.join()}}
             {% endif %}
-
-            <div class="btn_more"><a href="#{{post['u_id_post'] + 1}}">next <span>&raquo;</span></a></div>
-            <div class="btn_more"><a href="#{{post['u_id_post'] - 1}}"><span>&laquo;</span> prev </a></div>
-
             {% endfor %}
         </div>
     </div>

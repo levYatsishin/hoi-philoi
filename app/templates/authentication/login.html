@@ -23,13 +23,13 @@
                 <div id="sign_form">
                     <form method="post">
                         <div>
-                            <h4>Login {{form.login()}}</h4>
+                            <h4>Login <br> {{form.login(class_="input_field")}}</h4>
                         </div>
                         <div>
-                            <h4>Password {{form.password()}}</h4>
+                            <h4>Password <br> {{form.password(class_="input_field")}}</h4>
                         </div>
                         <br>
-                        {{form.submit()}}
+                        {{form.submit(class_="submit_btn")}}
                     </form>
                 </div>
                 <a href="/register">Don't have an account?</a>

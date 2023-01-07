@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="panel">
-    <h1>Sign up</h1>
+    <h1>Event</h1>
     <div id="sign_form">
         <form method="post">
             <div><h4>Description <br> {{form.content()}}</h4></div>
@@ -15,7 +15,7 @@
             <div><h4>Locate <br> {{form.locate()}}</h4></div>
             <br>
             {{form.submit()}}
-            <a href="/make_post">Make post</a>
+            <a href="/create_post">Make post</a>
         </form>
     </div>
 </div>
