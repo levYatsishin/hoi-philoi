@@ -7,6 +7,9 @@
             <div class="panel" id="{{post['u_id_post']}}">
                 <img src="{{post['image_reference']}}"/>
                 <p>{{post['content']}}</p>
+                {% if post['is_event'] %}
+                    Join {{form.join()}}
+                {% endif %}
 
                 <div class="btn_more"><a href="#{{post['u_id_post'] + 1}}">next <span>&raquo;</span></a></div>
                 <div class="btn_more"><a href="#{{post['u_id_post'] - 1}}"><span>&laquo;</span> prev </a></div>
