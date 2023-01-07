@@ -1,10 +1,10 @@
-import psycopg2
+import traceback
 from threading import Lock
+from typing import Any, TypeVar, Callable
 
+import psycopg2
 from loguru import logger
 from parse import parse
-import traceback
-from typing import Any, TypeVar, Callable
 
 from db_api.patterns import Singleton
 
@@ -359,7 +359,7 @@ class PostgresApi(metaclass=Singleton):
         :return: Return list of subscribers ids
         """
 
-        column_to_get = "u_id_user_who" if parameter == "u_id_user_who" else "u_id_user_subscribed_to"
+        column_to_get = "u_id_user_subscribed_to" if parameter == "u_id_user_who" else "u_id_user_who"
         self._cursor.execute(f"""SELECT {column_to_get} FROM subscriptions WHERE {parameter} = %s""", (value,))
         subscriptions = self._cursor.fetchall()
 
@@ -445,4 +445,3 @@ class PostgresApi(metaclass=Singleton):
 
         self._conn.close()
         logger.debug("PostgresDB: Connection closed")
-
