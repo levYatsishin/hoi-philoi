@@ -1,4 +1,4 @@
-from images_api import ImageApi
+from db_api import ImageApi
 from postgres_api import PostgresApi
 from datetime import datetime
 import os

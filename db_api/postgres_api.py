@@ -87,7 +87,7 @@ def initialise_tables(conn, cursor) -> None:
 
 
 class PostgresApi(metaclass=Singleton):
-    def __init__(self) -> None:
+    def __init__(self, debugging=True) -> None:
         self._conn = None
         self._cursor = None
         self.lock = Lock()
@@ -183,7 +183,7 @@ class PostgresApi(metaclass=Singleton):
         """
         This is a generic function for getting rows from the Data Bast
 
-        :param table: in which table the search happens
+        :param table: in which table the searching happens
         :param parameter: by which column
         :param value: what is the required value
         :return:
@@ -301,8 +301,8 @@ class PostgresApi(metaclass=Singleton):
         - 'username'
         - 'mail'
 
-        :param parameter: by what column the search happens
-        :param value: for which value the search happens
+        :param parameter: by what column the searching happens
+        :param value: for which value the searching happens
         :return: Returns dict that contains information about the user
         """
         user = self._generic_get_by('users', parameter, value)
@@ -319,8 +319,8 @@ class PostgresApi(metaclass=Singleton):
             - u_id_user
                 - id of the user(to get all his posts)
 
-        :param parameter: by what column the search happens
-        :param value: for which value the search happens
+        :param parameter: by what column the searching happens
+        :param value: for which value the searching happens
         :return: Return list of dict that contains info about the post(s) if post exists else None
         """
 
@@ -336,8 +336,8 @@ class PostgresApi(metaclass=Singleton):
             - u_id_user
                 - id of the user(to get all his events)
 
-        :param parameter: by what column the search happens
-        :param value: for which value the search happens
+        :param parameter: by what column the searching happens
+        :param value: for which value the searching happens
         :return: Return list of dicts that contains info about the event(s) if event exists else None
         """
 
@@ -354,8 +354,8 @@ class PostgresApi(metaclass=Singleton):
                 - id of the user with mew subscription
 
 
-        :param parameter: by what column the search happens
-        :param value: for which value the search happens
+        :param parameter: by what column the searching happens
+        :param value: for which value the searching happens
         :return: Return list of subscribers ids
         """
 
@@ -405,18 +405,28 @@ class PostgresApi(metaclass=Singleton):
             return False
 
     @lock_decorator
-    def get_users_by_tags(self, tags: list[str]) -> list:
+    def get_users_by_tags(self, tags: list[str], strict=True) -> list:
         """
         Returns list of users info(dicts) who have desired tags
 
+        :type strict: all tags must me searched: True; One of the tag must be searched: False
         :param tags: list of desired tags
         :return: list of users with desired tags
         """
 
-        conditions = [f"WHERE '{tag}' = any (tags)" for tag in tags]
-        self._cursor.execute(f"""SELECT * FROM users {" AND ".join(conditions)}""")
+        joiner = " AND " if strict else " OR "
 
+        conditions = [f"'{tag}' = any (tags)" for tag in tags]
+        self._cursor.execute(f"""SELECT * FROM users WHERE {joiner.join(conditions)}""")
         users = self._cursor.fetchall()
+        if users:
+            self._cursor.execute(f"""SELECT column_name
+                                                              FROM INFORMATION_SCHEMA.COLUMNS
+                                                              WHERE TABLE_NAME=N'users'""")
+            rows = self._cursor.fetchall()
+            rows = [col_name[0] for col_name in rows]
+
+            return [dict(zip(rows, users[x])) for x in range(len(users))]
         return users
 
     @lock_decorator
