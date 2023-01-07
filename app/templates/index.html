@@ -6,7 +6,10 @@
             {% for event in events %}
             <div class="panel">
                 <img src="{{event['image_reference']}}"/>
-                <p>{{event['content']}}</p>
+                <p>Description: <br> {{event['content']}}</p>
+                <p>Start time: {{event['time_start']}}</p>
+                <p>End time: {{event['time_end']}}</p>
+                <p>Location: {{event['location']}}</p>
             </div>
             {% endfor %}
         </div>
