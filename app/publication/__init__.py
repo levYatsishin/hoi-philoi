@@ -1,6 +1,6 @@
 from flask import Blueprint
 
-from . import routes
+from . import forms
 
 pub_app = Blueprint('pub_app', __name__)
 
