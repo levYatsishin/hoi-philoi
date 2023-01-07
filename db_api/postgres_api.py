@@ -138,11 +138,15 @@ class PostgresApi(metaclass=Singleton):
         success = True
 
         try:
-            value1 = input_info[column1]
-            value2 = input_info[column2]
+            values = list(input_info.items())
+
+            column1 = values[0][0]
+            column2 = values[1][0]
+            value1 = values[0][1]
+            value2 = values[1][1]
 
             self._cursor.execute(f"""SELECT count(*) FROM {table} 
-                                            WHERE {column1} = %s and {column2} = %s""", (value1, value2,))
+                                            WHERE {values[0][0]} = %s and {column2} = %s""", (value1, value2,))
 
             current_state = self._cursor.fetchone()[0]
             if not current_state:

@@ -23,7 +23,8 @@ if __name__ == "__main__":
     postgres_api.connect(**postgres_conf)
     image_api.connect(**minio_conf)
 
-    print(postgres_api.get_user_by(u_id_user=1))
+    print(postgres_api.get_user_by('u_id', 1))
+    postgres_api.create_post()
 
     # with open('../mushrooms.jpg', 'rb') as file:
     #     size = os.stat('../mushrooms.jpg').st_size
