@@ -2,7 +2,7 @@ import time
 
 from images_api import ImageApi
 from postgres_api import PostgresApi
-import datetime
+from datetime import datetime
 import os
 
 DB_PASSWORD = os.environ["POSTGRES_PASS"]
