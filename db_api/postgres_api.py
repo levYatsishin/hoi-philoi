@@ -1,7 +1,10 @@
 import traceback
+from typing import Any
 
 import psycopg2
+
 from loguru import logger
+from parse import parse
 
 from db_api.patterns import Singleton
 
@@ -19,7 +22,7 @@ def initialise_tables(conn, cursor) -> None:
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Users (
-                u_id_user SERIAL PRIMARY KEY not null,
+                u_id SERIAL PRIMARY KEY not null,
                 name VARCHAR(100) not null, 
                 username VARCHAR(50) not null unique,
                 mail  VARCHAR(500) not null unique,
@@ -30,31 +33,53 @@ def initialise_tables(conn, cursor) -> None:
                 """)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Posts (
-                u_id_post SERIAL PRIMARY KEY not null ,
+                u_id SERIAL PRIMARY KEY not null ,
                 u_id_user INTEGER not null,
                 content VARCHAR not null,
                 publication_date timestamp without time zone not null,
                 constraint posts_users_fkey foreign key (u_id_user)
-                references Users (u_id_user) on delete restrict on update cascade)
+                references Users (u_id) on delete restrict on update cascade)
                 """)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Likes (
                 u_id_post INTEGER not null,
                 u_id_user INTEGER not null,
                 constraint likes_users_fkey foreign key (u_id_user)
-                references Users (u_id_user) on delete restrict on update cascade,
+                references Users (u_id) on delete restrict on update cascade,
                 constraint likes_posts_fkey foreign key (u_id_post)
-                references Posts (u_id_post) on delete restrict on update cascade)
+                references Posts (u_id) on delete restrict on update cascade)
+                """)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS Subscriptions (
+                u_id_user_subscribed_to INTEGER not null,
+                u_id_user_who INTEGER not null,
+                constraint subscriptions_users_fkey foreign key (u_id_user_subscribed_to)
+                references Users (u_id) on delete restrict on update cascade,
+                constraint subscriptions_users_fkey2 foreign key (u_id_user_who)
+                references Users (u_id) on delete restrict on update cascade)
+                """)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS Events (
+                u_id SERIAL PRIMARY KEY not null ,
+                u_id_user INTEGER not null,
+                content VARCHAR not null,
+                publication_date timestamp without time zone not null,
+                time_start timestamp without time zone not null,
+                time_end timestamp without time zone not null,
+                location VARCHAR not null,
+                constraint posts_users_fkey foreign key (u_id)
+                references Users (u_id) on delete restrict on update cascade)
                 """)
     conn.commit()
 
 
-class DBApi(metaclass=Singleton):
+class PostgresApi(metaclass=Singleton):
     def __init__(self) -> None:
         self._conn = None
         self._cursor = None
 
     def connect(self, db_host, db_port, db_name, db_user, db_pass) -> None:
+        logger.debug("PostgresDB: Connecting")
         self._conn = psycopg2.connect(database=db_name,
                                       host=db_host,
                                       user=db_user,
@@ -62,107 +87,251 @@ class DBApi(metaclass=Singleton):
                                       port=db_port)
         self._cursor = self._conn.cursor()
         initialise_tables(self._conn, self._cursor)
+        logger.debug("PostgresDB: Connected")
 
-    def get_user_by(self, **kwargs) -> dict | None:
+    def _generic_create(self, table: str, input_fields: dict, required_keys: list) -> bool:
+        """
+        This is a generic function for creating new rows in the Data Base
+
+        :param table: table name in which row is being created
+        :param input_fields: dictionary  {column_name:value}
+        :param required_keys: keys which must be in input_fields.keys()
+        :return: True if success else False
+        """
+        success = True
+
+        if list(input_fields.keys()) != required_keys:
+            logger.debug("PostgresDB: Invalid keys in input dictionary")
+            return False
+
+        try:
+            self._cursor.execute(f"""INSERT INTO {table} ({", ".join([col for col in required_keys])})
+                                     VALUES ({', '.join(['%s' for _ in required_keys])})""",
+                                 [input_fields[key] for key in required_keys])
+            self._conn.commit()
+
+            logger.debug(f"PostgresDB: {table} created")
+
+        except Exception as e:
+            self._cursor.execute("ROLLBACK")
+            self._conn.commit()
+            if type(e) == psycopg2.errors.UniqueViolation:
+
+                violated_key = parse('duplicate key value violates '
+                                     'unique constraint "{}"', e.args[0].split('\n')[0])[0]
+                logger.warning(f"Creation aborted: row with this {violated_key} already exists")
+            else:
+                logger.error(f"Error: {e}\n Traceback: {traceback.format_exc()}")
+            success = False
+
+        finally:
+            return success
+
+    def _generic_change_state(self, table, input_info: dict) -> bool:
+        """
+        This is a generic function for changing state of some of the 2-states parameters in the Data Base
+
+        :param table: id of first entity of the process
+        :param input_info: what row to change if form of {column: value, column, value}
+        :return: Return True if successful else False
+        """
+        success = True
+
+        try:
+            values = list(input_info.items())
+
+            column1 = values[0][0]
+            column2 = values[1][0]
+            value1 = values[0][1]
+            value2 = values[1][1]
+
+            self._cursor.execute(f"""SELECT count(*) FROM {table} 
+                                            WHERE {values[0][0]} = %s and {column2} = %s""", (value1, value2,))
+
+            current_state = self._cursor.fetchone()[0]
+            if not current_state:
+                self._cursor.execute(f"""INSERT INTO {table} ({column1}, {column2})
+                        VALUES (%s, %s)""", (value1, value2))
+                self._conn.commit()
+            else:
+                self._cursor.execute(f"""DELETE FROM {table} WHERE {column1} = %s AND {column2} = %s""",
+                                     (value1, value2))
+                self._conn.commit()
+            logger.debug(f"PostgresDB: {table} state changed")
+
+        except Exception as e:
+            logger.error(f"Error: {e}\n Traceback: {traceback.format_exc()}")
+            success = False
+
+        return success
+
+    def _generic_get_by(self, table: str, parameter: str, value: str | int, offset=10) -> list[dict] | None:
+        """
+        This is a generic function for getting rows from the Data Bast
+
+        :param table: in which table the search happens
+        :param parameter: by which column
+        :param value: what is the required value
+        :return:
+        """
+
+        self._cursor.execute(f""" SELECT * FROM {table} WHERE {parameter} = %s
+                                  order by u_id desc limit {offset}""", (value,))
+        info = self._cursor.fetchall()
+
+        if info:
+            self._cursor.execute(f"""SELECT column_name
+                                                    FROM INFORMATION_SCHEMA.COLUMNS
+                                                    WHERE TABLE_NAME=N'{table}'""")
+            rows = self._cursor.fetchall()
+            rows = [col_name[0] for col_name in rows]
+
+            logger.debug(f"PostgresDB: {table} retrieved")
+            return [dict(zip(rows, info[x])) for x in info]
+        else:
+            logger.debug(f"PostgresDB: No {table} found")
+            return None
+
+    def create_user(self, fields: dict) -> bool:
+        """
+        This function creates new a user in the database
+
+        fields.keys() = ('name', 'username', 'mail', 'password_hash')
+            - name: str
+            - username: str
+            - mail: str
+            - password_hash: str
+
+        :param fields: dict with user fields
+        :return: Return True if user creation was successful else False
+        """
+        required_keys = ['name', 'username', 'mail', 'password_hash']
+
+        return self._generic_create('users', fields, required_keys)
+
+    def create_post(self, fields: dict) -> bool:
+        """
+        This function creates a new post in the database
+
+        Example:
+        fields.keys() = ('u_id_user', 'content', 'publication_date')
+            - u_id_user: int
+            - content: str
+            - publication_date: datatime object
+
+        :param fields: dict with post fields
+        :return: Return True if post creation was successful else False
+        """
+        required_keys = ['u_id_user', 'content', 'publication_date']
+
+        return self._generic_create('posts', fields, required_keys)
+
+    def create_event(self, fields: dict) -> bool:
+        """
+        fields.keys() = ('u_id_user', 'content', 'publication_date', 'time_start', 'time_end', 'location')
+            - u_id_user: int
+                - creators' id
+            - content: str
+                - description of the event
+            - publication_date: datatime object
+            - time_start: datatime object
+            - time_end: datatime object
+            - location: str
+
+        The function create a new event in database
+        :param fields: dict with event fields
+        :return: Return true if post creation was successful else false
+        """
+        required_keys = ['u_id_user', 'content', 'publication_date', 'time_start', 'time_end', 'location']
+
+        return self._generic_create('events', fields, required_keys)
+
+    def change_like_state(self, user_id: int, post_id: int) -> bool:
+        """
+        This function adds or removes like from a post.
+
+        :param user_id: id of the user who liked the post
+        :param post_id: id of the liked post
+        :return: Return True if successful else False
+        """
+        info = {'u_id_user': user_id, 'u_id_post': post_id}
+
+        return self._generic_change_state('likes', info)
+
+    def change_subscription_state(self, user_id_who_subscribing: int, user_id_subscribing_to: int) -> bool:
+        """
+        The function of adding or removing subscriptions from the user
+        :param user_id_who_subscribing: id of the user who subscribed the person
+        :param user_id_subscribing_to: id of the subscribed person
+        :return: Return True if successful else False
+        """
+        info = {'u_id_user_who': user_id_who_subscribing, 'u_id_user_subscribed_to': user_id_subscribing_to}
+
+        return self._generic_change_state('subscriptions', info)
+
+    def get_user_by(self, parameter: str, value: str | int) -> dict | None:
         """
         This function returns dict with user info
 
-        Possible keywords arguments:
-        - u_id_user
-        - username
-        - mail
+        Possible parameters:
+        - 'u_id'
+        - 'username'
+        - 'mail'
 
-        Example:
-        api.get_user_by(username='leo') # {"u_id_user": 213123, ...}
-        api.get_post_by(name=231) # None
-
-        :param kwargs: PARAM_NAME=PARAM_VALUE – one pair only
-        :return: Returns dict that contains u_id_user, name, username, mail, password_hash, image_reference, location,
-        bio, tag. If the user is not found returns None
+        :param parameter: by what column the search happens
+        :param value: for which value the search happens
+        :return: Returns dict that contains information about the user
         """
 
-        parameter, value = list(kwargs.items())[0]
-        self._cursor.execute(f""" SELECT * FROM users WHERE {parameter} = %s""", (value,))
-        user_info = self._cursor.fetchone()
+        return self._generic_get_by('users', parameter, value)[0]
 
-        if user_info:
-            self._cursor.execute(f"""SELECT column_name
-                                                    FROM INFORMATION_SCHEMA.COLUMNS
-                                                    WHERE TABLE_NAME=N'users'""")
-            rows = self._cursor.fetchall()
-            rows = [col_name[0] for col_name in rows]
-
-            return dict(zip(rows, user_info))
-        else:
-            return None
-
-    def get_posts_by(self, **kwargs) -> list[dict[str, any]] | None:
+    def get_posts_by(self, parameter: str, value: int) -> list[dict[str, Any]] | None:
         """
         This function returns list of dicts with posts info
 
-        Possible keywords arguments:
-            - u_id_post
+         Possible parameters:
+            - u_id
             - u_id_user
 
-        Example:
-        api.get_posts_by(u_id_post=100) # [{"content": "hello", ...}, ...]
-        api.get_posts_by(u_id_post=-1) # None
-
-        :param kwargs: keywords arguments
-        :return: Return list of dict that contains content, u_id_post, u_id_user, date, image_reference if post exists
-         else None
+        :param parameter: by what column the search happens
+        :param value: for which value the search happens
+        :return: Return list of dict that contains info about the post(s) if post exists else None
         """
 
-        parameter, value = list(kwargs.items())[0]
-        self._cursor.execute(f""" SELECT * FROM posts WHERE {parameter} = %s""", (value,))
-        posts = self._cursor.fetchall()
+        return self._generic_get_by('posts', parameter, value)
 
-        if posts:
-            self._cursor.execute(f"""SELECT column_name
-                                    FROM INFORMATION_SCHEMA.COLUMNS
-                                    WHERE TABLE_NAME=N'posts'""")
-            rows = self._cursor.fetchall()
-            rows = [col_name[0] for col_name in rows]
-
-            return [dict(zip(rows, post)) for post in posts]
-        else:
-            return None
-
-    def get_events_by(self, **kwargs) -> list[dict[str, any]] | None:
+    def get_events_by(self, parameter: str, value: int) -> list[dict[str, Any]] | None:
         """
         The function returns list of dicts with events info
-
         Possible keywords arguments:
-            - u_id_event
+            - u_id
             - u_id_user
 
-        Example:
-            api.get_events_by(u_id_event=212) # [{'u_id_event': 212, 'u_id_user': 312, ...}, ...]
-            api.get_events_by(u_id_user=312) # [{'u_id_event': 212, 'u_id_user': 312, ...}, ...]
-            api.get_events_by(name='name') # None
-
-        :param kwargs: keywords arguments
-        :return: Return list of user ids if post exists else None
+        :param parameter: by what column the search happens
+        :param value: for which value the search happens
+        :return: Return list of dicts that contains info about the event(s) if event exists else None
         """
-        pass
 
-    def get_subscribers_by(self, **kwargs) -> list[int] | None:
+        return self._generic_get_by('events', parameter, value)
+
+    def get_subscribers_by(self, parameter: str, value: int) -> list[int]:
         """
         This function returns list of user ids
-
         Possible keywords arguments:
-            - u_id_user
-            - u_id_subscriber
+            - u_id_user_who
+            - u_id_user_subscribed_to
 
-        Example:
-            api.get_users_by(u_id_user=10) # [123, 2132, 21312, ...]
-            api.get_users_by(u_id_subscriber=10) # [424, 312, ...]
-            api.get_users_by(u_id_subscriber=-1) # []
-
-        :param kwargs: keywords arguments
-        :return: Return list of user ids if post exists else None
+        :param parameter: by what column the search happens
+        :param value: for which value the search happens
+        :return: Return list of subscribers ids
         """
-        pass
+
+        column_to_get = "u_id_user_who" if parameter == "u_id_user_who" else "u_id_user_subscribed_to"
+        self._cursor.execute(f"""SELECT {column_to_get} FROM subscriptions WHERE {parameter} = %s""", (value,))
+        subscriptions = self._cursor.fetchall()
+
+        logger.debug("PostgresDB: Subscriptions retrieved")
+        return subscriptions
 
     def get_likes(self, post_id: int) -> int:
         """
@@ -178,142 +347,19 @@ class DBApi(metaclass=Singleton):
         self._cursor.execute(f""" SELECT count(*) FROM likes WHERE u_id_post = %s""", (post_id,))
         likes = self._cursor.fetchone()[0]
 
+        logger.debug("PostgresDB: Like retrieved")
         return likes
 
-    def get_number_subscriptions(self, user_id: int) -> int:
-        """
-        This function returns number of subscriptions by user_id
-
-        :param user_id: user id
-        :return: Return number of subscriptions. If user does not also exist return 0
-        """
-        pass
-
-    def create_user(self, fields: dict) -> bool:
-        """
-        This function creates new a user in the database
-
-        Example:
-
-        fields.keys() = (name, username, mail, password_hash)
-            - name: str
-            - username: str
-            - mail: str
-            - password_hash: str
-        fields['username'] = 'leo'
-        fields['password_hash'] = hash
-        ...
-        api.create_user(fields) # true
-        api.create_user({}) # false
-
-        :param fields: dict with user fields
-        :return: Return true if user creation was successful else false
-        """
-        success = True
-
-        keys = ['name', 'username', 'mail', 'password_hash']
-        if list(fields.keys()) != keys:
-            return False
-
-        try:
-            self._cursor.execute(f"""INSERT INTO users (name, username, mail, password_hash)
-            VALUES (%s, %s, %s, %s)""", [fields[key] for key in keys])
-            self._conn.commit()
-
-        except Exception as e:
-            logger.error(f"Error: {e}\n Traceback: {traceback.format_exc()}")
-            success = False
-
-        finally:
-            return success
-
-    def create_post(self, fields: dict) -> bool:
-        """
-        This function creates a new post in the database
-
-        Example:
-        fields.keys() = ('u_id_user', 'content', 'publication_date')
-            - u_id_user: int
-            - content: str
-            - publication_date: datatime object
-        fields['content'] = 'Hello, my name is Leo. Now i will tell you about ...'
-        fields['u_id_user'] = 1132
-        ...
-        api.create_post(fields) # true
-        api.create_post({}) # false
-
-        :param fields: dict with post fields
-        :return: Return true if post creation was successful else false
-        """
-        success = True
-
-        keys = ['u_id_user', 'content', 'publication_date']
-        if list(fields.keys()) != keys:
-            return False
-        try:
-            self._cursor.execute(f"""INSERT INTO posts (u_id_user, content, publication_date)
-                                    VALUES (%s, %s, %s)""", [fields[key] for key in keys])
-            self._conn.commit()
-
-        except Exception as e:
-            logger.error(f"Error: {e}\n Traceback: {traceback.format_exc()}")
-            success = False
-
-        finally:
-            return success
-
-    def create_event(self, fields: dict) -> bool:
-        """
-        The function create a new event in database
-
-        :param fields: dict with event fields
-        :return: Return true if post creation was successful else false
-        """
-        pass
-
-    def change_like_state(self, user_id: int, post_id: int) -> bool:
-        """
-        This function adds or removes like from a post.
-
-        :param user_id: id of the user who liked the post
-        :param post_id: id of the liked post
-        :return: Return True if successful else False
-        """
-        success = True
-
-        try:
-            self._cursor.execute(f"""SELECT count(*) FROM likes 
-                                    WHERE u_id_post = %s and u_id_user = %s""", (post_id, user_id,))
-
-            already_liked = self._cursor.fetchone()[0]
-            if not already_liked:
-                self._cursor.execute(f"""INSERT INTO likes (u_id_post, u_id_user)
-                VALUES (%s, %s)""", (post_id, user_id))
-                self._conn.commit()
-            else:
-                self._cursor.execute(f"""DELETE FROM likes WHERE u_id_post = %s AND u_id_user = %s""",
-                                     (post_id, user_id))
-                self._conn.commit()
-        except Exception as e:
-            logger.error(f"Error: {e}\n Traceback: {traceback.format_exc()}")
-            success = False
-
-        return success
-
-    def change_subscription_state(self, user_id: int, subscriber_id: int) -> bool:
-        """
-        The function of adding or removing subscriptions from the user
-
-        :param user_id: id of the user who subscribed the person
-        :param subscriber_id: id of the subscribed person
-        :return: Return True if successful else False
-        """
-        pass
+    def _drop_all_tables(self) -> None:
+        self._cursor.execute("""DROP TABLE users, posts, events,likes, subscriptions""")
+        self._conn.commit()
+        logger.debug("PostgresDB: All tables successfully dropped")
 
     def close_connection(self) -> None:
         """
         Closes connection to the Data Base
         """
 
-        self._conn.clsoe()
-        self._cursor.clsoe()
+        self._conn.close()
+        logger.debug("PostgresDB: Connection closed")
+

@@ -1,7 +1,7 @@
 import time
 
-from postgres_api import DBApi
 from images_api import ImageApi
+from postgres_api import PostgresApi
 import datetime
 import os
 
@@ -12,17 +12,19 @@ MINIO_API_HOST = os.environ["POSTGRES_IP"] + ":9000"
 MINIO_ACCESS_KEY = os.environ["MINIO_ACCESS_KEY"]
 MINIO_SECRET_KEY = os.environ["MINIO_SECRET_KEY"]
 
+postgres_conf = {'db_host': DB_IP, 'db_port': '5432', 'db_name': 'postgres', 'db_user': 'admin',
+                 'db_pass': DB_PASSWORD}
+minio_conf = {'address': MINIO_API_HOST, 'access_key': MINIO_ACCESS_KEY, 'secret_key': MINIO_SECRET_KEY}
+
 if __name__ == "__main__":
-    db_api = DBApi()
-    db_api2 = DBApi()
-    db_api.connect(DB_IP, '5432', 'postgres', 'admin', DB_PASSWORD)
-    db_api3 = DBApi()
-
-    print(f"Singleton is working: {db_api is db_api3}")
-    print(db_api3.get_user_by(u_id_user=13))
-
+    postgres_api = PostgresApi()
     image_api = ImageApi()
-    image_api.connect(MINIO_API_HOST, MINIO_ACCESS_KEY, MINIO_SECRET_KEY)
+
+    postgres_api.connect(**postgres_conf)
+    image_api.connect(**minio_conf)
+
+    print(postgres_api.get_user_by('u_id', 1))
+    postgres_api.create_post()
 
     # with open('../mushrooms.jpg', 'rb') as file:
     #     size = os.stat('../mushrooms.jpg').st_size
@@ -32,3 +34,5 @@ if __name__ == "__main__":
     with open('downloaded_mushrooms.jpg', 'wb') as file_data:
         for d in data.stream(32*1024):
             file_data.write(d)
+
+    postgres_api.close_connection()
