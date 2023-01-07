@@ -405,19 +405,22 @@ class PostgresApi(metaclass=Singleton):
             return False
 
     @lock_decorator
-    def get_users_by_tags(self, tags: list[str], strict=True) -> list:
+    def get_users_by_tags(self, tags: list[str], strict=True, exclude_id=-1) -> list:
         """
         Returns list of users info(dicts) who have desired tags
 
+        :type exclude_id: exclude users' id(for matching)
         :type strict: all tags must me searched: True; One of the tag must be searched: False
         :param tags: list of desired tags
         :return: list of users with desired tags
         """
 
         joiner = " AND " if strict else " OR "
-
         conditions = [f"'{tag}' = any (tags)" for tag in tags]
-        self._cursor.execute(f"""SELECT * FROM users WHERE {joiner.join(conditions)}""")
+
+        self._cursor.execute(f"""SELECT * FROM users WHERE ({joiner.join(conditions)}) 
+                                 AND u_id <> {exclude_id}""")
+
         users = self._cursor.fetchall()
         if users:
             self._cursor.execute(f"""SELECT column_name

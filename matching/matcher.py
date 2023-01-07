@@ -13,9 +13,8 @@ class Matcher:
         :return: list of users with desired tags sorted by number of intersection in tags
         """
         tags = user["tags"]
-        matched_users = self.postgres_api.get_users_by_tags(tags, strict=False)
+        matched_users = self.postgres_api.get_users_by_tags(tags, strict=False, exclude_id=user['u_id'])
 
         matched_users.sort(key=lambda a: len(set(a['tags']) & set(tags)), reverse=True)
-        matched_users.remove(user)
 
         return matched_users
