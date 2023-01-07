@@ -14,7 +14,7 @@ __all__ = []
 def index() -> str:
     api = PostgresApi()
 
-    events = api.get_events_by('u_id', current_user.get_data()['u_id_user'])
+    events = api.get_events_by('u_id', current_user.get_data()['u_id'])
 
     return render_template('index.html', events=events)
 
@@ -32,7 +32,7 @@ def personal(username='') -> Any:
     if person is None:
         return abort(404)
 
-    posts = api.get_posts_by('u_id_user', person['u_id_user'])
+    posts = api.get_posts_by('u_id_user', person['u_id'])
     posts = posts if posts is not None else []
 
     return render_template('personal.html', person=person, posts=posts, user_subscribed=False)
@@ -47,7 +47,7 @@ def subscribers(username) -> Any:
     if person is None:
         return abort(404)
 
-    subscribers_ids = api.get_subscribers_by('u_id_user_subscribed_to', person['u_id_user'])
+    subscribers_ids = api.get_subscribers_by('u_id_user_subscribed_to', person['u_id'])
 
     user_subscribers = []
 
@@ -67,6 +67,6 @@ def subscribe(username: str) -> Any:
     if user is None:
         return abort(404)
 
-    api.change_subscription_state(user['u_id_user'], current_user.get_id())
+    api.change_subscription_state(user['u_id'], current_user.get_id())
 
     return redirect(f'/person/{username}')

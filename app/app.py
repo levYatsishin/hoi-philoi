@@ -42,7 +42,7 @@ class App:
 
         @self.login_manager.user_loader
         def user_loader(user_id):
-            from units import User
+            from app.units import User
             return User(self.api.get_user_by('u_id', user_id))
 
     def run(self, host='0.0.0.0', debug=False, port=4000):
