@@ -187,7 +187,7 @@ class PostgresApi(metaclass=Singleton):
             rows = [col_name[0] for col_name in rows]
 
             logger.debug(f"PostgresDB: {table} retrieved")
-            return [dict(zip(rows, info[x])) for x in info]
+            return [dict(zip(rows, info[x])) for x in range(len(info))]
         else:
             logger.debug(f"PostgresDB: No {table} found")
             return None
