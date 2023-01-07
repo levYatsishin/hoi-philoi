@@ -70,6 +70,6 @@ def subscribe(username: str) -> Any:
     if user is None:
         return abort(404)
 
-    api.change_subscription_state(user['u_id'], current_user.get_id())
+    api.change_subscription_state(current_user.get_id(), user['u_id'])
 
     return redirect(f'/person/{username}')

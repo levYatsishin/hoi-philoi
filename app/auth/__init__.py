@@ -4,4 +4,4 @@ from . import forms
 
 auth_app = Blueprint('auth_app', __name__)
 
-from . import authentication
+from . import routes

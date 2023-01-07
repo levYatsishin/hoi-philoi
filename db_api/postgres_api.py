@@ -1,9 +1,9 @@
-import psycopg2
-
-from loguru import logger
-from parse import parse
 import traceback
 from typing import Any
+
+import psycopg2
+from loguru import logger
+from parse import parse
 
 from db_api.patterns import Singleton
 
@@ -390,4 +390,3 @@ class PostgresApi(metaclass=Singleton):
 
         self._conn.close()
         logger.debug("PostgresDB: Connection closed")
-

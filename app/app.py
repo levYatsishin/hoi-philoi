@@ -1,14 +1,12 @@
 import atexit
 
 from dotenv import dotenv_values
-
 from flask import Flask
 from flask_login import LoginManager
 
 from app.auth import auth_app
 from app.errors import error_handler
 from app.website import web_app
-
 from db_api import PostgresApi
 
 __all__ = ['App']
@@ -32,17 +30,15 @@ class App:
         self.login_manager = LoginManager()
         self.login_manager.init_app(self.flask)
 
-        del config['SECRET_KEY']
-        del config['DEBUG']
-
         self.api = PostgresApi()
-        self.api.connect(*[x[1] for x in config.items()])
+        self.api.connect(config['db_ip'], config['db_port'], config['db_name'], config['db_user'], config['db_pass'])
 
         atexit.register(self.stop)
 
         @self.login_manager.user_loader
         def user_loader(user_id):
             from app.units import User
+            print(user_id, type(user_id))
             return User(self.api.get_user_by('u_id', user_id))
 
     def run(self, host='0.0.0.0', port=4000):
