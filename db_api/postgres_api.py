@@ -175,10 +175,10 @@ class PostgresApi(metaclass=Singleton):
         :return:
         """
 
-        self._cursor.execute(f""" SELECT * FROM {table} WHERE {parameter} = %s
+        result = self._cursor.execute(f""" SELECT * FROM {table} WHERE {parameter} = %s
                                   order by u_id desc limit {limit}""", (value,))
 
-        info = self._cursor.fetchall()
+        info = result.fetchall()
 
         if info:
             self._cursor.execute(f"""SELECT column_name
@@ -378,6 +378,9 @@ class PostgresApi(metaclass=Singleton):
             return True
         else:
             return False
+
+    def get_users_by_tags(self):
+        pass
 
     def _drop_all_tables(self) -> None:
         self._cursor.execute("""DROP TABLE users, posts, events, likes, subscriptions""")
