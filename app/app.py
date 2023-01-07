@@ -1,5 +1,7 @@
 import atexit
 
+from waitress import serve
+
 from dotenv import dotenv_values
 from flask import Flask
 from flask_login import LoginManager
@@ -42,8 +44,11 @@ class App:
             from app.units import User
             return User(self.api.get_user_by('u_id', user_id))
 
-    def run(self, host='0.0.0.0', port=4000):
-        self.flask.run(host=host, debug=self.debug, port=port)
+    def run(self, host='0.0.0.0', port=4000, threads=6):
+        if self.debug:
+            self.flask.run(host=host, debug=self.debug, port=port)
+        else:
+            serve(self.flask, host=host, port=port, threads=threads)
 
     @staticmethod
     def stop():
