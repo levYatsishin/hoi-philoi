@@ -10,12 +10,12 @@
 
     {% if person['username'] != username %}
         {% if user_subscribed %}
-            <a href="#subscribe">Unsubscribe</a>
+            <a href="{{person['username']}}/subscribe">Unsubscribe</a>
         {% else %}
-            <a href="#subscribe">Subscribe</a>
+            <a href="{{person['username']}}/subscribe">Subscribe</a>
         {% endif %}
     {% endif %}
-    <a href="#subscribers" id="subscriptions">Subscriptions</a>
+    <a href="{{person['username']}}/subscribers" id="subscriptions">Subscribers</a>
 </ul>
 
 {% endblock %}
@@ -24,12 +24,9 @@
     <div class="scroll">
         <div class="scrollContainer">
             {% for post in posts %}
-            <div class="panel" id="{{post['u_id_post']}}">
+            <div class="panel"  >
                 <img src="{{post['image_reference']}}"/>
                 <p>{{post['content']}}</p>
-
-                <div class="btn_more"><a href="#{{post['u_id_post'] + 1}}">next <span>&raquo;</span></a></div>
-                <div class="btn_more"><a href="#{{post['u_id_post'] - 1}}"><span>&laquo;</span> prev </a></div>
             </div>
             {% endfor %}
         </div>

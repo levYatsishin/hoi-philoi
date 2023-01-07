@@ -20,7 +20,7 @@ class App:
 
         config = dotenv_values('.env')
 
-        self.debug = config['DEBUG']
+        self.debug = True if config['DEBUG'] == 'true' else False
 
         self.flask.config["SECRET_KEY"] = config['SECRET_KEY']
         self.flask.threaded = True
@@ -45,8 +45,8 @@ class App:
             from app.units import User
             return User(self.api.get_user_by('u_id', user_id))
 
-    def run(self, host='0.0.0.0', debug=False, port=4000):
-        self.flask.run(host=host, debug=debug, port=port)
+    def run(self, host='0.0.0.0', port=4000):
+        self.flask.run(host=host, debug=self.debug, port=port)
 
     @staticmethod
     def stop():
