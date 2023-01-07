@@ -138,9 +138,6 @@ class PostgresApi(metaclass=Singleton):
         success = True
 
         try:
-            column1 = required_info[0]
-            column2 = required_info[1]
-
             value1 = input_info[column1]
             value2 = input_info[column2]
 
