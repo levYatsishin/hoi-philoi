@@ -31,6 +31,8 @@ if __name__ == "__main__":
     postgres_api.change_like_state(1, 1)
     print(postgres_api.get_user_by('u_id', 1)['tags'])
 
+    print(postgres_api.get_users_by_tags(['gay']))
+
     # data = image_api.get_image("mushrooms.jpg")
     # with open('downloaded_mushrooms.jpg', 'wb') as file_data:
     #     for d in data.stream(32*1024):

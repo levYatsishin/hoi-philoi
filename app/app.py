@@ -7,6 +7,7 @@ from flask_login import LoginManager
 from app.auth import auth_app
 from app.errors import error_handler
 from app.website import web_app
+from app.publication import pub_app
 from db_api import PostgresApi
 
 __all__ = ['App']
@@ -26,6 +27,7 @@ class App:
         self.flask.register_blueprint(auth_app)
         self.flask.register_blueprint(error_handler)
         self.flask.register_blueprint(web_app)
+        self.flask.register_blueprint(pub_app)
 
         self.login_manager = LoginManager()
         self.login_manager.init_app(self.flask)

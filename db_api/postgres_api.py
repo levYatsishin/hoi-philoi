@@ -1,6 +1,6 @@
 import traceback
 from threading import Lock
-from typing import Any
+from typing import Any, TypeVar, Callable
 
 import psycopg2
 from loguru import logger
@@ -8,8 +8,10 @@ from parse import parse
 
 from db_api.patterns import Singleton
 
+FuncT = TypeVar("FuncT", bound=Callable[..., Any])
 
-def lock_decorator(function):
+
+def lock_decorator(function: FuncT) -> FuncT:
     def wrapper(self, *args, **kwargs):
         with self.lock:
             result = function(self, *args, **kwargs)
@@ -404,7 +406,18 @@ class PostgresApi(metaclass=Singleton):
 
     @lock_decorator
     def get_users_by_tags(self, tags: list[str]) -> list:
-        pass
+        """
+        Returns list of users info(dicts) who have desired tags
+
+        :param tags: list of desired tags
+        :return: list of users with desired tags
+        """
+
+        conditions = [f"WHERE '{tag}' = any (tags)" for tag in tags]
+        self._cursor.execute(f"""SELECT * FROM users {" AND ".join(conditions)}""")
+
+        users = self._cursor.fetchall()
+        return users
 
     @lock_decorator
     def _drop_all_tables(self) -> None:
@@ -412,7 +425,6 @@ class PostgresApi(metaclass=Singleton):
         self._conn.commit()
         logger.debug("PostgresDB: All tables successfully dropped")
 
-    @lock_decorator
     def close_connection(self) -> None:
         """
         Closes connection to the Data Base

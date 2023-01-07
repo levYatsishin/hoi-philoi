@@ -4,15 +4,15 @@
     <h1>Sign up</h1>
     <div id="sign_form">
         <form method="post">
-            <div><h4>Description {{form.content()}}</h4></div>
+            <div><h4>Description <br> {{form.content()}}</h4></div>
 
-            <div><h4>Image url {{form.image_url()}}</h4></div>
+            <div><h4>Image url  <br> {{form.image_url()}}</h4></div>
 
-            <div><h4>Start at {{form.time_start()}}</h4></div>
+            <div><h4>Start at <br> {{form.time_start()}}</h4></div>
 
-            <div><h4>End at {{form.time_end()}}</h4></div>
+            <div><h4>End at <br> {{form.time_end()}}</h4></div>
 
-            <div><h4>Locate {{form.locate()}}</h4></div>
+            <div><h4>Locate <br> {{form.locate()}}</h4></div>
             <br>
             {{form.submit()}}
             <a href="/make_post">Make post</a>
