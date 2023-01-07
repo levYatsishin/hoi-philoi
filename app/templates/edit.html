@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="panel">
+    <h1>Edit info</h1>
+    <div id="sign_form">
+        <form method="post">
+            <div>
+                <h4>Name {{form.name()}}</h4>
+            </div>
+            <div>
+                <h4>Bio {{form.bio()}}</h4>
+            </div>
+            <ul>
+                {% for tag in tags %}
+                <li><h4>tag['name'] {{form.tags[loop.index]()}}</h4></li>
+                {% endfor %}
+            </ul>
+            <br>
+            {{form.submit()}}
+        </form>
+    </div>
+</div>
+{% endblock %}
