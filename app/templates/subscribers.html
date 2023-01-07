@@ -1,12 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Subscribers</title>
-</head>
-<body>
-    {% for user in subscribers %}
-    <div><a href="/person/{{user['username']}}">user['name']</a></div>
-    {% endfor %}
-</body>
-</html>
+{% extends 'base.html' %}
+{% block content %}
+<div id="content">
+    <div class="scroll">
+        <div class="scrollContainer">
+            {% for subscriber in subscribers %}
+            <div class="panel" id="{{subscriber['u_id_user']}}">
+                <img src="{{subscriber['image_reference']}}"/>
+                <p>{{subscriber['username']}}</p>
+
+                <div class="btn_more"><a href="#{{subscriber['u_id_user'] + 1}}">next<span>&raquo;</span></a></div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

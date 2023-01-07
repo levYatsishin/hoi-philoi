@@ -39,10 +39,6 @@ h4 { font-size: 14px; margin: 0 0 15px 0; padding: 0; }
 .float_l { float: left; }
 .float_r { float: right; }
 
-.image_wrapper { display: inline-block; border: 1px solid #000; background: #333; padding: 4px; margin-bottom: 10px; }
-.image_fl { float: left; margin: 3px 15px 0 0; }
-.image_fr { float: right; margin: 3px 0 0 15px; }
-
 blockquote { font-style: italic; margin: 0 0 0 10px;}
 cite { font-weight: bold; color:#333; }
 cite span { color: #666; }
@@ -99,23 +95,6 @@ em { color: #f9a834; }
 	width: 480px; 
 	height: 320px; 
 	overflow: auto; 
-} 
-
-#gallery_container .gallery_box {
-	clear: both;
-	display: block; 
-	padding: 0;
-	margin: 0 0 40px 0;
-}
- 
-.gallery_box img {
-	float: left;
-	width: 120px;
-	height: 100px;
-	padding: 4px;
-	background: #fff;
-	border: 1px solid #ccc;
-	margin: 3px 30px 0 0;
 }
 
 #templatemo_footer {

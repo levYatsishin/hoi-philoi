@@ -34,7 +34,7 @@ def personal(username=''):
     posts = api.get_posts_by(u_id_user=person['u_id_user'])
     posts = posts if posts is not None else []
 
-    return render_template('personal.html', person=person, posts=posts)
+    return render_template('personal.html', person=person, posts=posts, user_subscribed=False)
 
 
 @web_app.route('/person/<username>/subscribers')

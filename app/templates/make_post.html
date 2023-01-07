@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="panel">
+    <h1>Sign up</h1>
+    <div id="sign_form">
+        <form method="post">
+            <div><h4>Description {{form.description()}}</h4></div>
+
+            <div><h4>Image url {{form.image_url()}}</h4></div>
+
+            <div><h4>Is event {{form.is_event()}}</h4></div>
+
+            <div><h4>Event date {{form.date()}}</h4></div>
+
+            <div><h4>People limit {{form.people_limit()}}</h4></div>
+
+            <div><h4>Cost {{form.cost()}}</h4></div>
+            <br>
+            {{form.submit()}}
+        </form>
+    </div>
+</div>
+{% endblock %}
