@@ -359,7 +359,7 @@ class PostgresApi(metaclass=Singleton):
         :return: Return list of subscribers ids
         """
 
-        column_to_get = "u_id_user_who" if parameter == "u_id_user_who" else "u_id_user_subscribed_to"
+        column_to_get = "u_id_user_subscribed_to" if parameter == "u_id_user_who" else "u_id_user_who"
         self._cursor.execute(f"""SELECT {column_to_get} FROM subscriptions WHERE {parameter} = %s""", (value,))
         subscriptions = self._cursor.fetchall()
 
