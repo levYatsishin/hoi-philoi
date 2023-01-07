@@ -33,6 +33,7 @@ def personal(username='') -> Any:
         return abort(404)
 
     posts = api.get_posts_by('u_id_user', person['u_id'])
+    print(posts)
     posts = posts if posts is not None else []
 
     user_subscribed = api.is_subscribed(current_user.get_data()['u_id'], person['u_id'])

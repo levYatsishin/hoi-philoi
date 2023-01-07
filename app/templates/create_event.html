@@ -4,17 +4,17 @@
     <h1>Event</h1>
     <div id="sign_form">
         <form method="post">
-            <div><h4>Description <br> {{form.content()}}</h4></div>
+            <div><h4>Description <br> {{form.content(class_="input_field")}}</h4></div>
 
-            <div><h4>Image url  <br> {{form.image_url()}}</h4></div>
+            <div><h4>Image url  <br> {{form.image_url(class_="input_field")}}</h4></div>
 
-            <div><h4>Start at <br> {{form.time_start()}}</h4></div>
+            <div><h4>Start at <br> {{form.time_start(class_="input_field")}}</h4></div>
 
-            <div><h4>End at <br> {{form.time_end()}}</h4></div>
+            <div><h4>End at <br> {{form.time_end(class_="input_field")}}</h4></div>
 
-            <div><h4>Locate <br> {{form.locate()}}</h4></div>
+            <div><h4>Locate <br> {{form.locate(class_="input_field")}}</h4></div>
             <br>
-            {{form.submit()}}
+            {{form.submit(class_="submit_btn")}}
             <a href="/create_post">Make post</a>
         </form>
     </div>

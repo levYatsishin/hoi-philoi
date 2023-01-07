@@ -4,11 +4,11 @@
     <h1>Post</h1>
     <div id="sign_form">
         <form method="post">
-            <div><h4>Description <br> {{form.content()}}</h4></div>
+            <div><h4>Description <br> {{form.content(class_="input_field")}}</h4></div>
 
-            <div><h4>Image url <br> {{form.image_url()}}</h4></div>
+            <div><h4>Image url <br> {{form.image_url(class_="input_field")}}</h4></div>
             <br>
-            {{form.submit()}}
+            {{form.submit(class_="submit_btn")}}
             <a href="/create_event" >Make event</a>
         </form>
     </div>
