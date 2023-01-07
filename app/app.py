@@ -38,7 +38,6 @@ class App:
         @self.login_manager.user_loader
         def user_loader(user_id):
             from app.units import User
-            print(user_id, type(user_id))
             return User(self.api.get_user_by('u_id', user_id))
 
     def run(self, host='0.0.0.0', port=4000):

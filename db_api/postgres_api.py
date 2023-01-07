@@ -1,11 +1,22 @@
-import psycopg2
-
-from loguru import logger
-from parse import parse
 import traceback
+from threading import Lock
 from typing import Any
 
+import psycopg2
+from loguru import logger
+from parse import parse
+
 from db_api.patterns import Singleton
+
+
+def lock_decorator(function):
+    def wrapper(self, *args, **kwargs):
+        with self.lock:
+            result = function(self, *args, **kwargs)
+
+        return result
+
+    return wrapper
 
 
 def initialise_tables(conn, cursor) -> None:
@@ -77,6 +88,7 @@ class PostgresApi(metaclass=Singleton):
     def __init__(self) -> None:
         self._conn = None
         self._cursor = None
+        self.lock = Lock()
 
     def connect(self, db_host, db_port, db_name, db_user, db_pass) -> None:
         logger.debug("PostgresDB: Connecting")
@@ -193,6 +205,7 @@ class PostgresApi(metaclass=Singleton):
             logger.debug(f"PostgresDB: No {table} found")
             return None
 
+    @lock_decorator
     def create_user(self, fields: dict) -> bool:
         """
         This function creates new a user in the database
@@ -210,6 +223,7 @@ class PostgresApi(metaclass=Singleton):
 
         return self._generic_create('users', fields, required_keys)
 
+    @lock_decorator
     def create_post(self, fields: dict) -> bool:
         """
         This function creates a new post in the database
@@ -227,6 +241,7 @@ class PostgresApi(metaclass=Singleton):
 
         return self._generic_create('posts', fields, required_keys)
 
+    @lock_decorator
     def create_event(self, fields: dict) -> bool:
         """
         fields.keys() = ('u_id_user', 'content', 'publication_date', 'time_start', 'time_end', 'location')
@@ -247,6 +262,7 @@ class PostgresApi(metaclass=Singleton):
 
         return self._generic_create('events', fields, required_keys)
 
+    @lock_decorator
     def change_like_state(self, user_id: int, post_id: int) -> bool:
         """
         This function adds or removes like from a post.
@@ -259,6 +275,7 @@ class PostgresApi(metaclass=Singleton):
 
         return self._generic_change_state('likes', info)
 
+    @lock_decorator
     def change_subscription_state(self, user_id_who_subscribing: int, user_id_subscribing_to: int) -> bool:
         """
         The function of adding or removing subscriptions from the user
@@ -271,6 +288,7 @@ class PostgresApi(metaclass=Singleton):
 
         return self._generic_change_state('subscriptions', info)
 
+    @lock_decorator
     def get_user_by(self, parameter: str, value: str | int) -> dict | None:
         """
         This function returns dict with user info
@@ -288,6 +306,7 @@ class PostgresApi(metaclass=Singleton):
         user = self._generic_get_by('users', parameter, value)
         return user[0] if user else None
 
+    @lock_decorator
     def get_posts_by(self, parameter: str, value: int) -> list[dict[str, Any]] | None:
         """
         This function returns list of dicts with posts info
@@ -305,6 +324,7 @@ class PostgresApi(metaclass=Singleton):
 
         return self._generic_get_by('posts', parameter, value)
 
+    @lock_decorator
     def get_events_by(self, parameter: str, value: int) -> list[dict[str, Any]] | None:
         """
         The function returns list of dicts with events info
@@ -321,6 +341,7 @@ class PostgresApi(metaclass=Singleton):
 
         return self._generic_get_by('events', parameter, value)
 
+    @lock_decorator
     def get_subscribers_by(self, parameter: str, value: int) -> list[int]:
         """
         This function returns list of user ids
@@ -343,6 +364,7 @@ class PostgresApi(metaclass=Singleton):
         logger.debug("PostgresDB: Subscriptions retrieved")
         return subscriptions
 
+    @lock_decorator
     def get_likes(self, post_id: int) -> int:
         """
         This function returns number of likes by post id
@@ -360,6 +382,7 @@ class PostgresApi(metaclass=Singleton):
         logger.debug("PostgresDB: Like retrieved")
         return likes
 
+    @lock_decorator
     def is_subscribed(self, user_id_who_subscribing: int, user_id_subscribing_to: int) -> bool:
         """
 
@@ -379,14 +402,17 @@ class PostgresApi(metaclass=Singleton):
         else:
             return False
 
-    def get_users_by_tags(self):
+    @lock_decorator
+    def get_users_by_tags(self, tags: list[str]) -> list:
         pass
 
+    @lock_decorator
     def _drop_all_tables(self) -> None:
         self._cursor.execute("""DROP TABLE users, posts, events, likes, subscriptions""")
         self._conn.commit()
         logger.debug("PostgresDB: All tables successfully dropped")
 
+    @lock_decorator
     def close_connection(self) -> None:
         """
         Closes connection to the Data Base
@@ -394,4 +420,3 @@ class PostgresApi(metaclass=Singleton):
 
         self._conn.close()
         logger.debug("PostgresDB: Connection closed")
-
