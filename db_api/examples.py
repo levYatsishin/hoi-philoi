@@ -5,7 +5,7 @@ import os
 from dotenv import load_dotenv
 
 DB_PASSWORD = os.getenv("POSTGRES_PASS")
-DB_IP =os.getenv("POSTGRES_IP")
+DB_IP = os.getenv("POSTGRES_IP")
 
 MINIO_API_HOST = os.getenv("POSTGRES_IP") + ":9000"
 MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY")

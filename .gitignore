@@ -1,3 +1,5 @@
 /venv/
 /idea/
 /mypy_cache/
+.env
+/.idea/
