@@ -33,6 +33,7 @@ def personal(username='') -> Any:
         return abort(404)
 
     posts = api.get_posts_by('u_id_user', person['u_id'])
+    print(posts)
     posts = posts if posts is not None else []
 
     user_subscribed = api.is_subscribed(current_user.get_data()['u_id'], person['u_id'])
@@ -70,6 +71,6 @@ def subscribe(username: str) -> Any:
     if user is None:
         return abort(404)
 
-    api.change_subscription_state(user['u_id'], current_user.get_id())
+    api.change_subscription_state(current_user.get_id(), user['u_id'])
 
     return redirect(f'/person/{username}')

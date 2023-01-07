@@ -1,11 +1,24 @@
 import psycopg2
+from threading import Lock
 
 from loguru import logger
 from parse import parse
 import traceback
-from typing import Any
+from typing import Any, TypeVar, Callable
 
 from db_api.patterns import Singleton
+
+FuncT = TypeVar("FuncT", bound=Callable[..., Any])
+
+
+def lock_decorator(function: FuncT) -> FuncT:
+    def wrapper(self, *args, **kwargs):
+        with self.lock:
+            result = function(self, *args, **kwargs)
+
+        return result
+
+    return wrapper
 
 
 def initialise_tables(conn, cursor) -> None:
@@ -20,22 +33,22 @@ def initialise_tables(conn, cursor) -> None:
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Users (
                 u_id SERIAL PRIMARY KEY not null,
-                name VARCHAR(100) not null, 
-                username VARCHAR(50) not null unique,
-                mail  VARCHAR(500) not null unique,
-                password_hash VARCHAR(500) not null, 
-                image VARCHAR,
-                location VARCHAR(500),
-                bio VARCHAR,
-                tags VARCHAR)
+                name text not null, 
+                username text not null unique,
+                mail  text not null unique,
+                password_hash text not null, 
+                image text,
+                location text,
+                bio text,
+                tags text[])
                 """)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Posts (
                 u_id SERIAL PRIMARY KEY not null ,
                 u_id_user INTEGER not null,
-                content VARCHAR not null,
+                content text not null,
                 publication_date timestamp without time zone not null,
-                image VARCHAR,
+                image text,
                 constraint posts_users_fkey foreign key (u_id_user)
                 references Users (u_id) on delete restrict on update cascade)
                 """)
@@ -61,12 +74,12 @@ def initialise_tables(conn, cursor) -> None:
     CREATE TABLE IF NOT EXISTS Events (
                 u_id SERIAL PRIMARY KEY not null ,
                 u_id_user INTEGER not null,
-                content VARCHAR not null,
+                content text not null,
                 publication_date timestamp without time zone not null,
                 time_start timestamp without time zone not null,
                 time_end timestamp without time zone not null,
-                location VARCHAR not null,
-                image VARCHAR,
+                location text not null,
+                image text,
                 constraint events_users_fkey foreign key (u_id_user)
                 references Users (u_id) on delete restrict on update cascade)
                 """)
@@ -74,9 +87,10 @@ def initialise_tables(conn, cursor) -> None:
 
 
 class PostgresApi(metaclass=Singleton):
-    def __init__(self) -> None:
+    def __init__(self, debugging=True) -> None:
         self._conn = None
         self._cursor = None
+        self.lock = Lock()
 
     def connect(self, db_host, db_port, db_name, db_user, db_pass) -> None:
         logger.debug("PostgresDB: Connecting")
@@ -169,7 +183,7 @@ class PostgresApi(metaclass=Singleton):
         """
         This is a generic function for getting rows from the Data Bast
 
-        :param table: in which table the search happens
+        :param table: in which table the searching happens
         :param parameter: by which column
         :param value: what is the required value
         :return:
@@ -177,12 +191,13 @@ class PostgresApi(metaclass=Singleton):
 
         self._cursor.execute(f""" SELECT * FROM {table} WHERE {parameter} = %s
                                   order by u_id desc limit {limit}""", (value,))
+
         info = self._cursor.fetchall()
 
         if info:
             self._cursor.execute(f"""SELECT column_name
                                                     FROM INFORMATION_SCHEMA.COLUMNS
-                                                    WHERE TABLE_NAME=N'{table}'""")
+                                                    WHERE TABLE_NAME=N'{table}' order by ordinal_position""")
             rows = self._cursor.fetchall()
             rows = [col_name[0] for col_name in rows]
 
@@ -192,6 +207,7 @@ class PostgresApi(metaclass=Singleton):
             logger.debug(f"PostgresDB: No {table} found")
             return None
 
+    @lock_decorator
     def create_user(self, fields: dict) -> bool:
         """
         This function creates new a user in the database
@@ -209,6 +225,7 @@ class PostgresApi(metaclass=Singleton):
 
         return self._generic_create('users', fields, required_keys)
 
+    @lock_decorator
     def create_post(self, fields: dict) -> bool:
         """
         This function creates a new post in the database
@@ -226,6 +243,7 @@ class PostgresApi(metaclass=Singleton):
 
         return self._generic_create('posts', fields, required_keys)
 
+    @lock_decorator
     def create_event(self, fields: dict) -> bool:
         """
         fields.keys() = ('u_id_user', 'content', 'publication_date', 'time_start', 'time_end', 'location')
@@ -246,6 +264,7 @@ class PostgresApi(metaclass=Singleton):
 
         return self._generic_create('events', fields, required_keys)
 
+    @lock_decorator
     def change_like_state(self, user_id: int, post_id: int) -> bool:
         """
         This function adds or removes like from a post.
@@ -258,6 +277,7 @@ class PostgresApi(metaclass=Singleton):
 
         return self._generic_change_state('likes', info)
 
+    @lock_decorator
     def change_subscription_state(self, user_id_who_subscribing: int, user_id_subscribing_to: int) -> bool:
         """
         The function of adding or removing subscriptions from the user
@@ -270,6 +290,7 @@ class PostgresApi(metaclass=Singleton):
 
         return self._generic_change_state('subscriptions', info)
 
+    @lock_decorator
     def get_user_by(self, parameter: str, value: str | int) -> dict | None:
         """
         This function returns dict with user info
@@ -280,13 +301,14 @@ class PostgresApi(metaclass=Singleton):
         - 'username'
         - 'mail'
 
-        :param parameter: by what column the search happens
-        :param value: for which value the search happens
+        :param parameter: by what column the searching happens
+        :param value: for which value the searching happens
         :return: Returns dict that contains information about the user
         """
         user = self._generic_get_by('users', parameter, value)
         return user[0] if user else None
 
+    @lock_decorator
     def get_posts_by(self, parameter: str, value: int) -> list[dict[str, Any]] | None:
         """
         This function returns list of dicts with posts info
@@ -297,13 +319,14 @@ class PostgresApi(metaclass=Singleton):
             - u_id_user
                 - id of the user(to get all his posts)
 
-        :param parameter: by what column the search happens
-        :param value: for which value the search happens
+        :param parameter: by what column the searching happens
+        :param value: for which value the searching happens
         :return: Return list of dict that contains info about the post(s) if post exists else None
         """
 
         return self._generic_get_by('posts', parameter, value)
 
+    @lock_decorator
     def get_events_by(self, parameter: str, value: int) -> list[dict[str, Any]] | None:
         """
         The function returns list of dicts with events info
@@ -313,13 +336,14 @@ class PostgresApi(metaclass=Singleton):
             - u_id_user
                 - id of the user(to get all his events)
 
-        :param parameter: by what column the search happens
-        :param value: for which value the search happens
+        :param parameter: by what column the searching happens
+        :param value: for which value the searching happens
         :return: Return list of dicts that contains info about the event(s) if event exists else None
         """
 
         return self._generic_get_by('events', parameter, value)
 
+    @lock_decorator
     def get_subscribers_by(self, parameter: str, value: int) -> list[int]:
         """
         This function returns list of user ids
@@ -330,8 +354,8 @@ class PostgresApi(metaclass=Singleton):
                 - id of the user with mew subscription
 
 
-        :param parameter: by what column the search happens
-        :param value: for which value the search happens
+        :param parameter: by what column the searching happens
+        :param value: for which value the searching happens
         :return: Return list of subscribers ids
         """
 
@@ -342,6 +366,7 @@ class PostgresApi(metaclass=Singleton):
         logger.debug("PostgresDB: Subscriptions retrieved")
         return subscriptions
 
+    @lock_decorator
     def get_likes(self, post_id: int) -> int:
         """
         This function returns number of likes by post id
@@ -359,6 +384,7 @@ class PostgresApi(metaclass=Singleton):
         logger.debug("PostgresDB: Like retrieved")
         return likes
 
+    @lock_decorator
     def is_subscribed(self, user_id_who_subscribing: int, user_id_subscribing_to: int) -> bool:
         """
 
@@ -378,6 +404,35 @@ class PostgresApi(metaclass=Singleton):
         else:
             return False
 
+    @lock_decorator
+    def get_users_by_tags(self, tags: list[str], strict=True, exclude_id=-1) -> list:
+        """
+        Returns list of users info(dicts) who have desired tags
+
+        :type exclude_id: exclude users' id(for matching)
+        :type strict: all tags must me searched: True; One of the tag must be searched: False
+        :param tags: list of desired tags
+        :return: list of users with desired tags
+        """
+
+        joiner = " AND " if strict else " OR "
+        conditions = [f"'{tag}' = any (tags)" for tag in tags]
+
+        self._cursor.execute(f"""SELECT * FROM users WHERE ({joiner.join(conditions)}) 
+                                 AND u_id <> {exclude_id}""")
+
+        users = self._cursor.fetchall()
+        if users:
+            self._cursor.execute(f"""SELECT column_name
+                                                              FROM INFORMATION_SCHEMA.COLUMNS
+                                                              WHERE TABLE_NAME=N'users'""")
+            rows = self._cursor.fetchall()
+            rows = [col_name[0] for col_name in rows]
+
+            return [dict(zip(rows, users[x])) for x in range(len(users))]
+        return users
+
+    @lock_decorator
     def _drop_all_tables(self) -> None:
         self._cursor.execute("""DROP TABLE users, posts, events, likes, subscriptions""")
         self._conn.commit()

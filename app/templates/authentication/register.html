@@ -23,22 +23,22 @@
                 <div id="sign_form">
                     <form method="post">
                         <div>
-                            <h4>Name {{form.name()}}</h4>
+                            <h4>Name <br> {{form.name(class_="input_field")}}</h4>
                         </div>
                         <div>
-                            <h4>Username {{form.username()}}</h4>
+                            <h4>Username <br> {{form.username(class_="input_field")}}</h4>
                         </div>
                         <div>
-                            <h4>Mail {{form.mail()}}</h4>
+                            <h4>Mail <br> {{form.mail(class_="input_field")}}</h4>
                         </div>
                         <div>
-                            <h4>Password {{form.password()}}</h4>
+                            <h4>Password <br> {{form.password(class_="input_field")}}</h4>
                         </div>
                         <div>
-                            <h4>Confirm password {{form.password_confirm()}}</h4>
+                            <h4>Confirm password <br> {{form.password_confirm(class_="input_field")}}</h4>
                         </div>
                         <br>
-                        {{form.submit()}}
+                        {{form.submit(class_="submit_btn")}}
                     </form>
                 </div>
                 <a href="/login">Already have an account?</a>
