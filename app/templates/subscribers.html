@@ -6,7 +6,7 @@
             {% for subscriber in subscribers %}
             <div class="panel">
                 <img src="{{subscriber['image_reference']}}"/>
-                <p>{{subscriber['username']}}</p>
+                <p><a href="/person/{{subscriber['username']}}">{{subscriber['username']}}</a></p>
             </div>
             {% endfor %}
         </div>
