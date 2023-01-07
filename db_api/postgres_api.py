@@ -38,25 +38,25 @@ def initialise_tables(conn, cursor) -> None:
                 content VARCHAR not null,
                 publication_date timestamp without time zone not null,
                 constraint posts_users_fkey foreign key (u_id_user)
-                references Users (u_id_user) on delete restrict on update cascade)
+                references Users (u_id) on delete restrict on update cascade)
                 """)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Likes (
                 u_id_post INTEGER not null,
                 u_id_user INTEGER not null,
                 constraint likes_users_fkey foreign key (u_id_user)
-                references Users (u_id_user) on delete restrict on update cascade,
+                references Users (u_id) on delete restrict on update cascade,
                 constraint likes_posts_fkey foreign key (u_id_post)
-                references Posts (u_id_post) on delete restrict on update cascade)
+                references Posts (u_id) on delete restrict on update cascade)
                 """)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Subscriptions (
                 u_id_user_subscribed_to INTEGER not null,
                 u_id_user_who INTEGER not null,
                 constraint subscriptions_users_fkey foreign key (u_id_user_subscribed_to)
-                references Users (u_id_user) on delete restrict on update cascade,
+                references Users (u_id) on delete restrict on update cascade,
                 constraint subscriptions_users_fkey2 foreign key (u_id_user_who)
-                references Users (u_id_user) on delete restrict on update cascade)
+                references Users (u_id) on delete restrict on update cascade)
                 """)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Events (
@@ -67,8 +67,8 @@ def initialise_tables(conn, cursor) -> None:
                 time_start timestamp without time zone not null,
                 time_end timestamp without time zone not null,
                 location VARCHAR not null,
-                constraint posts_users_fkey foreign key (u_id_user)
-                references Users (u_id_user) on delete restrict on update cascade)
+                constraint posts_users_fkey foreign key (u_id)
+                references Users (u_id) on delete restrict on update cascade)
                 """)
     conn.commit()
 
