@@ -2,6 +2,8 @@ from minio import Minio
 from loguru import logger
 import traceback
 
+from typing import Any
+
 from db_api.patterns import Singleton
 
 
@@ -14,7 +16,7 @@ class ImageApi(metaclass=Singleton):
         self._minio_client = Minio(address, access_key=access_key, secret_key=secret_key, secure=False)
         logger.debug("MINIO: Connected")
 
-    def upload_image(self, image_data: any, image_name: str, size: int) -> str | None:
+    def upload_image(self, image_data: Any, image_name: str, size: int) -> str | None:
         """
         This function uploads image
 
