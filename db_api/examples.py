@@ -30,6 +30,7 @@ if __name__ == "__main__":
     postgres_api.create_post({'u_id_user': 1, 'content': 'hi', 'publication_date': datetime.now()})
     postgres_api.change_like_state(1, 1)
     print(postgres_api.get_user_by('u_id', 1)['tags'])
+    print(postgres_api.get_posts_by('u_id', 1))
 
     print(postgres_api.get_users_by_tags(['gay']))
 

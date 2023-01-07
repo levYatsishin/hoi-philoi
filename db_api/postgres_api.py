@@ -197,7 +197,7 @@ class PostgresApi(metaclass=Singleton):
         if info:
             self._cursor.execute(f"""SELECT column_name
                                                     FROM INFORMATION_SCHEMA.COLUMNS
-                                                    WHERE TABLE_NAME=N'{table}'""")
+                                                    WHERE TABLE_NAME=N'{table}' order by ordinal_position""")
             rows = self._cursor.fetchall()
             rows = [col_name[0] for col_name in rows]
 
