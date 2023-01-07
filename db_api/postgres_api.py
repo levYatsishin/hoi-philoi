@@ -1,10 +1,9 @@
-import traceback
-from typing import Any
-
 import psycopg2
 
 from loguru import logger
 from parse import parse
+import traceback
+from typing import Any
 
 from db_api.patterns import Singleton
 
@@ -285,8 +284,8 @@ class PostgresApi(metaclass=Singleton):
         :param value: for which value the search happens
         :return: Returns dict that contains information about the user
         """
-
-        return self._generic_get_by('users', parameter, value)[0]
+        user = self._generic_get_by('users', parameter, value)
+        return user[0] if user else None
 
     def get_posts_by(self, parameter: str, value: int) -> list[dict[str, Any]] | None:
         """
