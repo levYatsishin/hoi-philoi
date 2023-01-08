@@ -1,4 +1,4 @@
-from flask import redirect
+from flask import redirect, render_template
 from . import error_handler
 
 
@@ -9,4 +9,4 @@ def unauthorized_error(*_):
 
 @error_handler.app_errorhandler(404)
 def unauthorized_error(*_):
-    return '<h1>404 Not Found </h1>'
+    return render_template('errors/404.html')

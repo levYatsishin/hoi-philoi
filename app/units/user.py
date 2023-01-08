@@ -8,7 +8,7 @@ class User(UserMixin):
         self.__data: dict = data
 
     def get_id(self) -> int:
-        return self.__data['u_id_user']
+        return self.__data['u_id']
 
     def get_data(self):
         return self.__data

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>οἱ φίλοι</title>
+    <meta name="keywords" content="mini social, free download, website templates, CSS, HTML"/>
+    <meta name="description" content="Mini Social is a free website template from templatemo.com"/>
+    <link href="\static\css\global.css" rel="stylesheet" type="text/css"/>
+
+    <link rel="stylesheet" href="\static\css\main.css" type="text/css" media="screen" charset="utf-8"/>
+</head>
+<body>
+<div id="slider">
+    {% block pre_content %} {% endblock %}
+    <div id="templatemo_main">
+        <ul id="header">
+            <li><a href="/">main page</a></li>
+            <li><a href="/person/{{username}}">your page</a></li>
+            <li><a href="/create_post">create post</a></li>
+        </ul>
+
+        {% block content %} {% endblock %}
+
+        <div id="templatemo_footer">
+
+            Copyright © 2023 <a href="#">οἱ φίλοι</a>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

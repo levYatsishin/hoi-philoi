@@ -4,11 +4,32 @@
 	padding: 20px 10px 0 70px;
 }
 
+#sign {
+    position: center;
+	width: 800px;
+	margin-left: 300px;
+}
+
+#error {
+	position: center;
+	margin-top: 200px;
+	text-align: center;
+}
+
+#error h1 {
+	font-size: xx-large;
+}
+
 #user_info {
 	float: left;
 	padding-top: 50px;
 	width: 200px;
 	padding-left: 20px;
+}
+
+#user_info li {
+	display: block;
+	margin-bottom: 10px;
 }
 
 #templatemo_main {
@@ -37,7 +58,15 @@
 	height: 48px;
 	margin-right: 40px;
 	color: #1e8;
-	font-size: 24px;
+	font-size: x-large;
+}
+
+#subscribers {
+	width: 48px;
+	height: 48px;
+	margin-right: 40px;
+	color: #1e8;
+	font-size: medium;
 }
 
 
@@ -57,9 +86,10 @@
 }
 
 .scrollContainer div.panel {
-    padding: 30px;
-    height: 395px;
-    width: 540px;
+    padding: 20px;
+    border: dashed #886;
+    /* height: 395px;
+    width: 540px; */
 }
 
 .hide {

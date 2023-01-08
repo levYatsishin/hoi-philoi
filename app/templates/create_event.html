@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="panel">
+    <h1>Event</h1>
+    <div id="sign_form">
+        <form method="post">
+            <div><h4>Description <br> {{form.content(class_="input_field")}}</h4></div>
+
+            <div><h4>Image url  <br> {{form.image_url(class_="input_field")}}</h4></div>
+
+            <div><h4>Starts at <br> {{form.time_start(class_="input_field")}}</h4></div>
+
+            <div><h4>Ends at <br> {{form.time_end(class_="input_field")}}</h4></div>
+
+            <div><h4>Location <br> {{form.locate(class_="input_field")}}</h4></div>
+            <br>
+            {{form.submit(class_="submit_btn")}}
+            <br>
+            <a href="/create_post">Make post</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

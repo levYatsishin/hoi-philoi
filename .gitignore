@@ -4,3 +4,6 @@
 /secret_key
 /.venv/
 /.idea/
+./.env
+.env
+__pycache__/

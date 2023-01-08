@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+<div id="content">
+    <div class="scroll">
+        <div class="scrollContainer">
+            {% for subscriber in subscribers %}
+            <div class="panel">
+                <img src="{{subscriber['image_reference']}}"/>
+                <p><a href="/person/{{subscriber['username']}}">{{subscriber['username']}}</a></p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
