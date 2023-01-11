@@ -3,4 +3,4 @@
     <h1>οἱ φίλοι</h1>
 </div>
 
-MVP of a social network for people who love Philosophy.<br>Launched on week-long project sprint
+MVP of a social network for people who love Philosophy.<br>Launched on a week-long project sprint
