@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="picture.png" alt="Platos' school" width="160"  height="160">
+    <img src="app/static/images/picture.png" alt="Platos' school" width="160"  height="160">
     <h1>οἱ φίλοι</h1>
 </div>
 
