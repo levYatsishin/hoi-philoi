@@ -7,7 +7,7 @@ services:
     ports: 
       - 5432:5432
     volumes:
-      - ~/postgres:/var/lib/postgresql/data
+      - ~/databases/postgres:/var/lib/postgresql/data
     env_file:
       - ./.db.env
     restart: unless-stopped
@@ -20,7 +20,7 @@ services:
       - 9000:9000
       - 9090:9090
     volumes: 
-      - ~/minio/data:/data
+      - ~/databases/minio/data:/data
     env_file:
       - ./.db.env
     restart: unless-stopped
